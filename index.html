@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talent de Demain FC — Former les leaders du football</title>
+  <meta name="description" content="Talent de Demain FC — the academy forging the football leaders of tomorrow.">
+  
+  <!-- Sharing: without these a link pasted into WhatsApp or Facebook
+       shows a bare URL. The image must be an absolute address. -->
+  <link rel="canonical" href="https://talentdedemainfc.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Talent de Demain FC">
+  <meta property="og:locale" content="fr_CI">
+  <meta property="og:locale:alternate" content="en_GB">
+  <meta property="og:url" content="https://talentdedemainfc.com/">
+  <meta property="og:title" content="Talent de Demain FC — Former les leaders du football">
+  <meta property="og:description" content="Talent de Demain FC — the academy forging the football leaders of tomorrow.">
+  <meta property="og:image" content="https://talentdedemainfc.com/assets/img/home-card.webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="750">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Talent de Demain FC — Former les leaders du football">
+  <meta name="twitter:description" content="Talent de Demain FC — the academy forging the football leaders of tomorrow.">
+  <meta name="twitter:image" content="https://talentdedemainfc.com/assets/img/home-card.webp">
+  <meta name="theme-color" content="#F0EFED">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="assets/img/logo-crest.png">
+  <!-- Fonts are self-hosted (see css/styles.css @font-face) — no CDN request -->
+  <!-- Marks that JS is running, so the load-in animation can hide elements
+       at their start position without ever hiding them for no-JS users. -->
+  <script>document.documentElement.classList.add('js-anim');</script>
+  <!-- ?v= : cache-busting — bump on every CSS/JS change -->
+  <link rel="stylesheet" href="css/styles.css?v=17">
+  <!-- Preload the scrub video so the hero is ready before the user scrolls -->
+  <link rel="preload" as="video" href="assets/video/jersey-scrub.mp4" type="video/mp4" media="(min-width: 768px)">
+
+  <!-- Structured data: lets search engines show the club as an entity
+       (name, logo, socials) rather than a plain blue link.
+       Fill in telephone / address once the club confirms them. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SportsOrganization",
+    "name": "Talent de Demain FC",
+    "sport": "Football",
+    "foundingDate": "2023",
+    "url": "https://talentdedemainfc.com",
+    "logo": "https://talentdedemainfc.com/assets/img/logo-crest.png",
+    "image": "https://talentdedemainfc.com/assets/img/home-card.webp",
+    "description": "Académie de football à Abidjan — catégories U-12, U-15 et U-19.",
+    "email": "contact@talentdedemainfc.com",
+    "address": { "@type": "PostalAddress", "addressCountry": "CI" },
+    "sponsor": { "@type": "Organization", "name": "Global Impact Côte d'Ivoire" },
+    "sameAs": [
+      "https://www.instagram.com/talent_de_demainfc",
+      "https://youtube.com/@talentdedemainfc",
+      "https://www.facebook.com/profile.php?id=61552210673396"
+    ]
+  }
+  </script>
+
+  <!-- ===================== MESURE D'AUDIENCE =====================
+       Coller ici le script du service choisi, juste avant </head>.
+
+       Recommandé — Cloudflare Web Analytics (gratuit, sans cookie,
+       donc AUCUN bandeau de consentement obligatoire) :
+       <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+               data-cf-beacon='{"token":"VOTRE_TOKEN"}'></script>
+
+       Le formulaire émet déjà un événement à chaque inscription réussie
+       (voir js/pages.js) : évén. DOM "tdd:join" + dataLayer "join_submitted",
+       avec le profil du visiteur (joueur / parent / supporter / partenaire).
+       ============================================================= -->
+</head>
+<body>
+
+  <!-- ============ NAVIGATION ============ -->
+  <header class="nav">
+    <a class="nav__brand" href="index.html" aria-label="Talent de Demain FC — accueil">
+      <img src="assets/img/logo-crest.png?v=2" alt="Blason du Talent de Demain FC" width="52" height="68">
+    </a>
+
+    <nav class="nav__menu" aria-label="Principal">
+      <a href="index.html" class="is-active">Accueil</a>
+      <a href="squads.html">Équipes</a>
+      <a href="academy.html">Académie</a>
+      <a href="events.html">Événements</a>
+      <a href="community.html">Communauté</a>
+    </nav>
+
+    <div class="nav__actions">
+      <button class="icon-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ HERO (pinned — scroll drives the jersey video) ============ -->
+  <!-- .hero-track sets the scroll distance; .hero-sticky stays pinned while the video scrubs -->
+  <section class="hero-track" id="hero-track">
+    <div class="hero-sticky">
+
+      <!-- Giant display headline, sits BEHIND the jersey video -->
+      <h1 class="hero-title" aria-label="Talent de Demain FC">
+        <span class="hero-title__line" data-parallax="-1">TALENT DE</span>
+        <span class="hero-title__line" data-parallax="1">DEMAIN&nbsp;FC</span>
+      </h1>
+
+      <!-- Scroll-driven jersey video.
+           The <video> is hidden and used as a frame source; frames are painted
+           on the <canvas> (smooth scrubbing). multiply blend + edge masks melt
+           the video's studio background into the page background — and crop
+           away any corner watermark. -->
+      <div class="jersey" id="jersey">
+        <video id="jersey-video" muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
+        <canvas id="jersey-canvas" aria-label="Maillot du Talent de Demain FC en rotation"></canvas>
+        <noscript><img class="jersey__fallback" src="assets/img/jersey-poster.webp?v=2" alt="Maillot du Talent de Demain FC"></noscript>
+      </div>
+
+      <!-- Bottom-left copy block -->
+      <div class="hero-copy">
+        <h2 class="hero-copy__title">Former les<br>leaders du football.<br>Rejoignez notre histoire.</h2>
+        <p class="hero-copy__text">Une académie pensée pour la nouvelle génération — un encadrement d'élite, du vrai temps de jeu, et un chemin clair de la première touche à l'équipe première.</p>
+        <a class="btn" href="academy.html">Découvrir l'académie</a>
+      </div>
+
+      <!-- Scroll-synced story captions: each one lives in a window of the
+           rotation (data-from → data-to, in scroll progress 0..1) and is
+           faded in/out by js/main.js in sync with the scrub. -->
+      <div class="story" aria-hidden="true">
+        <div class="story__item story__item--right" data-from="0.02" data-to="0.22">
+          <span class="story__kicker">01</span>
+          <h3 class="story__title">Monochrome 2026</h3>
+          <p class="story__text">Marbré liquide. Col rond gris.</p>
+        </div>
+        <div class="story__item story__item--left" data-from="0.28" data-to="0.48">
+          <span class="story__kicker">02</span>
+          <h3 class="story__title">Tissu de compétition</h3>
+          <p class="story__text">Maille respirante, conçue pour l'intensité.</p>
+        </div>
+        <div class="story__item story__item--right" data-from="0.52" data-to="0.72">
+          <span class="story__kicker">03</span>
+          <h3 class="story__title">Le numéro 1</h3>
+          <p class="story__text">Porté par la nouvelle génération.</p>
+        </div>
+        <div class="story__item story__item--left" data-from="0.78" data-to="0.98">
+          <span class="story__kicker">04</span>
+          <h3 class="story__title">Votre nom ensuite</h3>
+          <p class="story__text">Détections ouvertes pour la saison 2026-27.</p>
+        </div>
+      </div>
+
+      <!-- Programmatic rotation readout: SCROLL hint at rest, then live 0→360° -->
+      <div class="rotation-meter" id="rotation-meter" aria-hidden="true">
+        <span class="rotation-meter__label" id="rotation-label">Défiler</span>
+        <span class="rotation-meter__line"><i id="rotation-line"></i></span>
+        <span class="rotation-meter__deg" id="rotation-deg">0°</span>
+      </div>
+
+      <!-- Bottom-right media card (phone-style frame) -->
+      <aside class="media-card" aria-label="Dans le club">
+        <div class="media-card__screen">
+          <img src="assets/img/home-card.webp?v=2" alt="Joueurs et encadrement du Talent de Demain FC pendant une séance">
+          <span class="media-card__progress"><i id="scroll-progress"></i></span>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- ============ OUTRO ============ -->
+  <section class="outro">
+    <p class="outro__kicker">Talent de Demain FC</p>
+    <h2 class="outro__title">La nouvelle génération commence ici.</h2>
+    <p class="outro__text">De la première séance au premier contrat professionnel — un club, un parcours, un maillot.</p>
+    <a class="btn btn--light" href="academy.html">Découvrir l'académie</a>
+    <footer class="outro__footer">
+      <span class="outro__sponsor">Sponsor officiel — <strong>Global Impact Côte d'Ivoire</strong></span>
+      © 2026 Talent de Demain FC — DEPUIS 2023
+    </footer>
+  </section>
+
+  <script src="js/i18n.js?v=2"></script>
+  <script src="js/nav.js?v=2"></script>
+  <script src="js/main.js?v=20"></script>
+</body>
+</html>

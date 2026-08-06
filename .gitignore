@@ -1,0 +1,5 @@
+# rien de lourd ni de local ne doit entrer dans le depot
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

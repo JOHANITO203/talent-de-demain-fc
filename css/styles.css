@@ -1,0 +1,764 @@
+/* ==========================================================================
+   Talent de Demain FC — landing page
+   Faithful reproduction of the reference design, with the center jersey
+   replaced by a scroll-driven video (see js/main.js).
+   ========================================================================== */
+
+/* ---------- Self-hosted fonts (downloaded from Google Fonts, latin subset) -- */
+
+/* Headline display face — closest match to the design's chamfered octagonal
+   custom font. */
+@font-face {
+  font-family: 'Chakra Petch';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/ChakraPetch-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Chakra Petch';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/ChakraPetch-SemiBold.woff2') format('woff2');
+}
+/* UI / body face — variable font, one file covers 400–800 */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/Montserrat-Variable.woff2') format('woff2');
+}
+
+/* ---------- Design tokens (values sampled from the reference capture) ------ */
+:root {
+  --bg: #F0EFED;            /* warm off-white page background        */
+  --ink: #101010;           /* near-black text / buttons             */
+  --ink-soft: #3c3c3c;      /* body copy                             */
+  --red: #C13327;           /* jersey red                            */
+  --white: #ffffff;
+  --card: #0D0D0D;          /* media card frame                      */
+
+  --font-display: 'Chakra Petch', 'Arial Black', sans-serif;
+  --font-ui: 'Montserrat', 'Segoe UI', sans-serif;
+
+  --nav-h: 104px;
+  --gutter: clamp(20px, 4vw, 76px);
+
+  /* Video → page blending: lifts the clip's beige studio backdrop
+     (~#C6C0BB) to white so `multiply` makes it vanish into --bg. */
+  --jersey-filter: brightness(1.32) contrast(1.04) saturate(1.05);
+}
+
+/* ---------- Reset / base --------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img, video, canvas { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  /* above .nav-panel (60): the close button and the crest must stay
+     reachable while the panel is open */
+  z-index: 80;
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter);
+  /* soft fade so the giant headline slides under it while scrolling */
+  background: linear-gradient(to bottom, var(--bg) 72%, transparent);
+}
+
+.nav__brand img {
+  width: 52px;
+  height: auto;
+  /* melt the logo's white rectangle into the off-white page */
+  mix-blend-mode: multiply;
+}
+
+.nav__menu {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: clamp(20px, 3.2vw, 56px);
+}
+
+.nav__menu a {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 11px 4px;          /* ≥ 40px tall: tablets get the full menu too */
+  transition: opacity .2s ease;
+}
+.nav__menu a:hover { opacity: .55; }
+
+.nav__actions { display: flex; align-items: center; gap: clamp(12px, 1.6vw, 26px); }
+.icon-btn svg { width: 24px; height: 24px; display: block; }
+/* 44px hit area (the icon stays 24px) — negative margin keeps the layout */
+.icon-btn {
+  padding: 10px;
+  margin: -10px;
+  transition: opacity .2s ease;
+}
+.icon-btn:hover { opacity: .55; }
+
+/* ---- Language switch (built by js/i18n.js) ---- */
+.lang-btn {
+  min-width: 44px;
+  padding: 9px 10px;
+  border: 1px solid rgba(16, 16, 16, .22);
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .12em;
+  color: var(--ink);
+  transition: border-color .2s ease, background .2s ease;
+}
+.lang-btn:hover { border-color: var(--ink); background: rgba(16, 16, 16, .05); }
+.nav-open .lang-btn { opacity: 0; pointer-events: none; }
+
+/* ---- Menu panel (built by js/nav.js) ---- */
+.icon-btn .icon-close { display: none; }
+.nav-open .icon-btn .icon-bars { display: none; }
+.nav-open .icon-btn .icon-close { display: block; }
+
+.nav-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;                     /* above the fixed header */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(24px, 5vh, 52px);
+  padding: calc(var(--nav-h) + 24px) var(--gutter) 40px;
+  background: rgba(240, 239, 237, .97);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .35s var(--ease-out-expo), visibility .35s;
+}
+.nav-open .nav-panel { opacity: 1; visibility: visible; }
+
+.nav-panel__links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 1.4vh, 14px);
+}
+
+.nav-panel__links a {
+  display: block;
+  padding: 10px 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(30px, 8vw, 56px);
+  line-height: 1.05;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  color: var(--ink);
+  /* staggered rise, released with the panel */
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .4s var(--ease-out-expo), transform .4s var(--ease-out-expo);
+}
+.nav-open .nav-panel__links a { opacity: 1; transform: none; }
+.nav-panel__links a:nth-child(1) { transition-delay: .06s; }
+.nav-panel__links a:nth-child(2) { transition-delay: .11s; }
+.nav-panel__links a:nth-child(3) { transition-delay: .16s; }
+.nav-panel__links a:nth-child(4) { transition-delay: .21s; }
+.nav-panel__links a:nth-child(5) { transition-delay: .26s; }
+.nav-panel__links a.is-active { color: var(--red); }
+
+.nav-panel__extra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.nav-panel__extra .btn { margin-top: 0; }
+
+.nav-panel__social { display: flex; gap: 10px; }
+.nav-panel__social a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(16, 16, 16, .18);
+  border-radius: 50%;
+  color: var(--ink);
+  transition: border-color .2s ease, transform .2s ease;
+}
+.nav-panel__social a:hover { border-color: var(--ink); transform: translateY(-2px); }
+.nav-panel__social svg { width: 20px; height: 20px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-panel, .nav-panel__links a { transition: none; }
+}
+
+/* ==========================================================================
+   Hero — pinned section, scroll scrubs the jersey video
+   ========================================================================== */
+.hero-track {
+  /* Scroll runway: the sticky viewport stays pinned while the user scrolls
+     through this distance — that scroll maps to video time. */
+  height: 480vh;
+  position: relative;
+}
+
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+  isolation: isolate;
+}
+
+/* ---- Giant display headline (behind the jersey) ---- */
+.hero-title {
+  position: absolute;
+  /* Anchored to the TOP (≈ under the nav, like the reference) instead of the
+     vertical center. Centering made the block drop into the bottom-left copy
+     on short-but-wide viewports (e.g. 1366×768 laptops). Top-anchoring keeps
+     the block height and the copy zone independent. */
+  top: 14vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hero-title__line {
+  display: block;
+  /* Masks the per-letter rise: chars start translated below this box */
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-weight: 700;
+  /* Bounded by BOTH width and height: on short viewports the vh cap shrinks
+     the type so the second line always clears the copy block below. */
+  font-size: min(15.4vw, 23vh);
+  line-height: .88;
+  letter-spacing: .005em;
+  white-space: nowrap;
+  color: var(--ink);
+  will-change: transform;
+}
+
+/* Kinetic entrance: each letter (split by main.js) rises out of the line's
+   mask with a staggered expo ease — then the whole line keeps moving with
+   the scroll (drift + depth recession set per-frame by the scrub loop). */
+.hero-title__line .char {
+  display: inline-block;
+  transform: translateY(118%);
+  transition: transform .9s cubic-bezier(.16, 1, .3, 1);
+  transition-delay: calc(var(--i, 0) * 38ms);
+  will-change: transform;
+}
+.hero-title__line.is-in .char { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-title__line .char { transition: none; transform: none; }
+}
+
+/* ---- Scroll-driven jersey video ---- */
+.jersey {
+  position: absolute;
+  left: 50%;
+  /* Sits low in the hero: the collar starts inside the lower third of the
+     "DEMAIN FC" line, so both headline lines stay readable. */
+  bottom: -8vh;
+  transform: translateX(-50%);
+  /* Scale anchors at the hem: the jersey grows UPWARD into the foreground
+     while its floor shadow stays put (see the scale in main.js). */
+  transform-origin: 50% 100%;
+  z-index: 2;
+  /* source video is cropped 900×1080 (5:6) */
+  height: 66vh;
+  aspect-ratio: 5 / 6;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.jersey video { display: none; /* frame source only — painted on the canvas */ }
+
+.jersey canvas,
+.jersey__fallback {
+  width: 100%;
+  height: 100%;
+  /* The WebGL renderer keys out the clip's studio backdrop in real time
+     (see js/main.js) — the canvas holds a true transparent cutout of the
+     jersey, so it melts into the page and occludes the headline exactly
+     along its silhouette. Edge masks are kept as a safety net (they also
+     guarantee no corner watermark can ever show). */
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%),
+    linear-gradient(180deg, transparent 0, #000 5%, #000 97%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%),
+    linear-gradient(180deg, transparent 0, #000 5%, #000 97%, transparent 100%);
+  mask-composite: intersect;
+}
+
+/* Fallback when WebGL is unavailable: opaque frames, backdrop lifted to
+   the page color and blended away with multiply. The blend sits on the
+   .jersey wrapper (not the canvas) so it composites against the page
+   background inside the hero's isolated stacking context. */
+.no-webgl .jersey { mix-blend-mode: multiply; }
+.no-webgl .jersey canvas,
+.jersey__fallback {
+  filter: var(--jersey-filter);
+}
+.jersey__fallback { mix-blend-mode: multiply; }
+
+/* ---- Bottom-left copy block ---- */
+.hero-copy {
+  position: absolute;
+  left: var(--gutter);
+  bottom: clamp(28px, 6vh, 64px);
+  z-index: 3;
+  max-width: 430px;
+}
+
+.hero-copy__title {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: clamp(20px, 1.85vw, 30px);
+  line-height: 1.14;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+}
+
+.hero-copy__text {
+  margin-top: 18px;
+  font-size: clamp(14px, 1vw, 16px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 360px;
+}
+
+/* ---- Button ---- */
+.btn {
+  display: inline-block;
+  margin-top: 26px;
+  padding: 17px 30px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  border-radius: 10px;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(16, 16, 16, .22);
+}
+.btn--light { background: var(--white); color: var(--ink); }
+
+/* ---- Scroll-synced story captions (opacity/motion driven by main.js) ---- */
+.story__item {
+  position: absolute;
+  top: 46%;
+  z-index: 3;
+  max-width: 230px;
+  opacity: 0;                    /* JS animates in sync with the scrub */
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+.story__item--left  { left: var(--gutter); }
+.story__item--right { right: var(--gutter); text-align: right; }
+
+.story__kicker {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: .2em;
+  color: var(--red);
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 10px;
+}
+
+.story__title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.story__text {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* ---- Rotation meter: "SCROLL" hint at rest, live degrees while scrubbing */
+.rotation-meter {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+  /* HUD chip: stays readable when the enlarged jersey passes behind it */
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(240, 239, 237, .72);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 0 rgba(16, 16, 16, .06);
+}
+
+.rotation-meter__label,
+.rotation-meter__deg {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.rotation-meter__deg { min-width: 44px; text-align: left; }
+
+.rotation-meter__line {
+  position: relative;
+  width: 120px;
+  height: 2px;
+  background: rgba(16, 16, 16, .18);
+  overflow: hidden;
+}
+.rotation-meter__line i {
+  position: absolute;
+  inset: 0;
+  background: var(--red);
+  transform-origin: left;
+  transform: scaleX(0);
+  will-change: transform;
+}
+
+/* ---- Bottom-right media card (phone-style frame) ---- */
+.media-card {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(28px, 6vh, 64px);
+  z-index: 3;
+  width: clamp(240px, 17.5vw, 340px);
+  background: var(--card);
+  border-radius: 26px;
+  padding: 10px;
+  box-shadow: 0 24px 48px rgba(16, 16, 16, .28);
+}
+
+.media-card__screen {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10.2;
+}
+
+.media-card__screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* vertical scrub progress line inside the card (mirrors video progress) */
+.media-card__progress {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  right: 10px;
+  width: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .28);
+}
+.media-card__progress i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--white);
+  transform-origin: top;
+  transform: scaleY(0);
+  will-change: transform;
+}
+
+/* ==========================================================================
+   Outro
+   ========================================================================== */
+.outro {
+  position: relative;
+  z-index: 4;
+  background: var(--ink);
+  color: var(--white);
+  min-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 96px var(--gutter) 48px;
+}
+
+.outro__kicker {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+.outro__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(30px, 4.6vw, 72px);
+  text-transform: uppercase;
+  margin-top: 18px;
+  max-width: 18ch;
+}
+
+.outro__footer {
+  margin-top: auto;
+  padding-top: 72px;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .4;
+}
+
+/* Official sponsor sits above the copyright, slightly stronger */
+.outro__sponsor {
+  display: block;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, .14);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .24em;
+}
+.outro__sponsor strong { letter-spacing: .16em; }
+
+/* ==========================================================================
+   Load-in choreography
+   Every element starts offset + transparent and settles into place when
+   <html> gets `is-ready` (set by main.js). The start state is scoped to
+   `.js-anim` — a one-line inline script in <head> — so the page is never
+   left invisible if JavaScript is disabled or fails to run.
+   Each rule keeps the element's own hover transition intact.
+   ========================================================================== */
+:root { --ease-out-expo: cubic-bezier(.16, 1, .3, 1); }
+
+.js-anim .nav__brand,
+.js-anim .nav__menu,
+.js-anim .nav__actions,
+.js-anim .hero-copy__title,
+.js-anim .hero-copy__text,
+.js-anim .media-card {
+  opacity: 0;
+  transition: opacity .85s var(--ease-out-expo) var(--d, 0s),
+              transform .85s var(--ease-out-expo) var(--d, 0s);
+}
+
+/* Start positions */
+.js-anim .nav__brand,
+.js-anim .nav__menu,
+.js-anim .nav__actions   { transform: translateY(-14px); }
+.js-anim .hero-copy__title,
+.js-anim .hero-copy__text { transform: translateY(26px); }
+.js-anim .media-card      { transform: translate(48px, 14px); }
+
+/* .nav__menu is centered with translateX(-50%) — keep it while rising */
+.js-anim .nav__menu { transform: translate(-50%, -14px); }
+
+/* Nav links rise individually; their hover opacity transition is preserved */
+.js-anim .nav__menu a {
+  transform: translateY(-10px);
+  transition: transform .8s var(--ease-out-expo) var(--d, 0s),
+              opacity .2s ease;
+}
+
+/* The CTA fades only — its hover transform/shadow timing stays untouched */
+.js-anim .hero-copy .btn {
+  opacity: 0;
+  transition: opacity .85s var(--ease-out-expo) var(--d, 0s),
+              transform .25s ease, box-shadow .25s ease;
+}
+
+/* Meter: centered with translateX(-50%) */
+.js-anim .rotation-meter {
+  opacity: 0;
+  transform: translate(-50%, 18px);
+  transition: opacity .85s var(--ease-out-expo) var(--d, 0s),
+              transform .85s var(--ease-out-expo) var(--d, 0s);
+}
+
+/* The jersey fades only: its transform is written every frame by the scrub
+   loop, so a transform transition here would fight the per-frame updates. */
+.js-anim .jersey {
+  opacity: 0;
+  transition: opacity 1.1s var(--ease-out-expo) .25s;
+}
+
+/* Stagger — nav first, then the copy column, then the side elements */
+.js-anim .nav__brand              { --d: .05s; }
+.js-anim .nav__menu               { --d: .12s; }
+.js-anim .nav__menu a:nth-child(1) { --d: .18s; }
+.js-anim .nav__menu a:nth-child(2) { --d: .24s; }
+.js-anim .nav__menu a:nth-child(3) { --d: .30s; }
+.js-anim .nav__menu a:nth-child(4) { --d: .36s; }
+.js-anim .nav__menu a:nth-child(5) { --d: .42s; }
+.js-anim .nav__actions            { --d: .20s; }
+.js-anim .hero-copy__title        { --d: .60s; }
+.js-anim .hero-copy__text         { --d: .70s; }
+.js-anim .hero-copy .btn          { --d: .80s; }
+.js-anim .media-card              { --d: .90s; }
+.js-anim .rotation-meter          { --d: 1.05s; }
+
+/* Settled state */
+.js-anim.is-ready .nav__brand,
+.js-anim.is-ready .nav__actions,
+.js-anim.is-ready .nav__menu a,
+.js-anim.is-ready .hero-copy__title,
+.js-anim.is-ready .hero-copy__text,
+.js-anim.is-ready .hero-copy .btn,
+.js-anim.is-ready .media-card,
+.js-anim.is-ready .jersey { opacity: 1; }
+
+.js-anim.is-ready .nav__brand,
+.js-anim.is-ready .nav__actions,
+.js-anim.is-ready .nav__menu a,
+.js-anim.is-ready .hero-copy__title,
+.js-anim.is-ready .hero-copy__text,
+.js-anim.is-ready .media-card     { transform: none; }
+
+.js-anim.is-ready .nav__menu      { opacity: 1; transform: translateX(-50%); }
+.js-anim.is-ready .rotation-meter { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .js-anim .nav__brand,
+  .js-anim .nav__actions,
+  .js-anim .nav__menu a,
+  .js-anim .hero-copy__title,
+  .js-anim .hero-copy__text,
+  .js-anim .hero-copy .btn,
+  .js-anim .media-card,
+  .js-anim .jersey      { opacity: 1; transform: none; transition: none; }
+  .js-anim .nav__menu   { opacity: 1; transform: translateX(-50%); transition: none; }
+  .js-anim .rotation-meter { opacity: 1; transform: translate(-50%, 0); transition: none; }
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 900px) {
+  :root { --nav-h: 76px; }
+
+  .nav__menu { display: none; }          /* collapsed behind the burger */
+  .nav__brand img { width: 42px; }
+
+  .hero-track { height: 380vh; }         /* shorter runway on touch     */
+
+  /* Mobile hero is stacked, not layered: headline under the nav, jersey in
+     the middle band, copy at the foot. Centering the title (as on desktop)
+     put it straight behind the jersey, which hid it completely. */
+  .hero-title {
+    top: calc(var(--nav-h) + 6px);
+    transform: translateX(-50%);
+  }
+  .hero-title__line { font-size: min(11.5vw, 8vh); }
+
+  .jersey { height: 40vh; bottom: 31vh; }
+
+  .hero-copy {
+    max-width: none;
+    right: var(--gutter);
+    bottom: 22px;
+  }
+  .hero-copy__title { font-size: 21px; }
+  .hero-copy__text  { margin-top: 12px; max-width: none; }
+  .hero-copy .btn   { margin-top: 18px; }
+
+  .media-card { display: none; }         /* not part of the mobile view */
+  .story__item { display: none; }        /* captions would clutter mobile */
+  /* the meter sat on top of the CTA at this height — the scroll affordance
+     is obvious enough on touch without it */
+  .rotation-meter { display: none; }
+}
+
+/* ==========================================================================
+   Phone in landscape — very short viewport
+   Stacking headline / jersey / copy vertically needs ~700px of height; at
+   390px the jersey landed on top of the copy. Here the hero goes side by
+   side instead: headline across the top, jersey right, copy left.
+   ========================================================================== */
+@media (max-width: 950px) and (max-height: 520px) and (orientation: landscape) {
+  :root { --nav-h: 54px; }
+
+  .hero-title { top: calc(var(--nav-h) + 2px); }
+  .hero-title__line { font-size: min(5.5vw, 10vh); }
+
+  .jersey {
+    height: 64vh;
+    bottom: 0;
+    left: auto;
+    right: 5vw;
+    --jersey-x: 0px;      /* read by the per-frame transform in main.js */
+  }
+
+  .hero-copy {
+    max-width: 46%;
+    right: auto;
+    bottom: 14px;
+  }
+  .hero-copy__title { font-size: 17px; }
+  .hero-copy__text  { margin-top: 8px; font-size: 12.5px; line-height: 1.4; }
+  .hero-copy .btn   { margin-top: 12px; padding: 12px 20px; }
+}
+
+/* ==========================================================================
+   Reduced motion — static jersey frame, no scrub
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero-track { height: auto; }
+  .hero-sticky { position: relative; }
+}

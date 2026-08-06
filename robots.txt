@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://talentdedemainfc.com/sitemap.xml
