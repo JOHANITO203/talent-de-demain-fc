@@ -724,15 +724,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .rotation-meter { display: none; }
 }
 
-
-/* Chevauchement sur ecran court : les legendes de rotation sont posees a
-   46% de hauteur et le bloc de texte est ancre en bas. Sous ~640px de haut
-   les deux se superposent — la legende passait par-dessus le titre du
-   bloc. Elles sont secondaires : on les retire quand la place manque. */
-@media (max-height: 640px) {
-  .story__item { display: none; }
-}
-
 /* ==========================================================================
    Phone in landscape — very short viewport
    Stacking headline / jersey / copy vertically needs ~700px of height; at
