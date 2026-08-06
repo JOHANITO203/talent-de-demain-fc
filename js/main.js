@@ -277,20 +277,63 @@
 
   /* ---- Seeking (never more than one seek in flight) ---------------------- */
   var seekTimer = 0;
+  var seekFails = 0;      // consecutive seeks that never reported back
+  var loopMode = false;   // set when this device cannot scrub at all
+
+  /* Mobile browsers commonly refuse to decode frames for a video that has
+     never played: seeking a cold element leaves the canvas on frame 0, which
+     is exactly how the hero looked frozen on a real phone. A muted play/pause
+     initialises the decoder — allowed without a user gesture because the
+     element is muted and playsinline. */
+  function primeDecoder() {
+    try {
+      var p = video.play();
+      if (p && p.then) {
+        p.then(function () { video.pause(); drawFrame(); })
+         .catch(function () { /* blocked: the loop fallback covers it */ });
+      } else {
+        video.pause();
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  /* Draw once the decoded frame is actually presented. Without this the
+     canvas can be painted before the new frame exists, showing the old one. */
+  function drawWhenReady() {
+    drawFrame();
+    if (video.requestVideoFrameCallback) {
+      try { video.requestVideoFrameCallback(function () { drawFrame(); }); }
+      catch (e) { /* ignore */ }
+    }
+  }
+
+  /* Last resort: if this device simply will not seek, let the clip play on a
+     loop. The jersey keeps turning — it is no longer tied to the scroll, but
+     the hero stays alive instead of standing still. */
+  function enterLoopMode() {
+    if (loopMode) return;
+    loopMode = true;
+    video.loop = true;
+    video.play().catch(function () {});
+  }
 
   function requestSeek(t) {
-    if (seekBusy) { pendingT = t; return; }
+    if (loopMode || seekBusy) { if (!loopMode) pendingT = t; return; }
     seekBusy = true;
     video.currentTime = t;
-    // Watchdog: if 'seeked' never fires (stalled load), unblock the pipeline
-    // so the scrub self-heals instead of freezing.
+    // Watchdog: if 'seeked' never fires, unblock the pipeline so the scrub
+    // self-heals; three misses in a row means seeking is dead on this device.
     clearTimeout(seekTimer);
-    seekTimer = setTimeout(function () { seekBusy = false; }, 600);
+    seekTimer = setTimeout(function () {
+      seekBusy = false;
+      if (++seekFails >= 3) enterLoopMode();
+    }, 600);
   }
 
   video.addEventListener('seeked', function () {
     clearTimeout(seekTimer);
-    drawFrame();
+    seekFails = 0;
+    drawWhenReady();
     seekBusy = false;
     if (pendingT >= 0) {           // a newer position arrived meanwhile
       var t = pendingT;
@@ -349,7 +392,10 @@
     smooth += (target - smooth) * 0.14;
     if (hasOverride) { smooth = target; vSmooth = target; } // QA: exact frame
 
-    if (duration > 0) {
+    if (loopMode) {
+      // seeking is unavailable here: just keep painting the playing clip
+      drawFrame();
+    } else if (duration > 0) {
       // Clamp a hair under duration: seeking exactly to the end can stall.
       var t = Math.min(vSmooth * duration, duration - 0.05);
       if (Math.abs(t - video.currentTime) > FRAME_STEP / 2) {
@@ -422,7 +468,8 @@
   function onReady() {
     if (booted) return; // guard against listener + readyState double boot
     booted = true;
-    drawFrame(); // paint the first frame immediately
+    drawFrame();    // paint the first frame immediately
+    primeDecoder(); // …then wake the decoder so later seeks produce frames
     if (reducedMotion && !hasOverride) return; // a11y: static frame, no scrub
     readScroll();
     // Autoplay the reveal spin only from the top of the page (a reload
