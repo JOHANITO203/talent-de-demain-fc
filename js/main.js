@@ -98,6 +98,78 @@
   else if (landscapeHero.addListener) landscapeHero.addListener(syncJerseyX);   // older Safari
   window.addEventListener('resize', syncJerseyX);
 
+  /* ---- Hero collision guard -----------------------------------------------
+     Every piece of the hero is absolutely positioned with its own fixed
+     offset, so none of them knows where the others are. A sweep of 63
+     viewports found 126 real overlaps — captions landing on the copy block,
+     the meter crossing it — on ordinary laptop and tablet heights.
+
+     Fixed offsets cannot express "stay clear of that block", because the
+     block's height depends on the text and the font size. So we measure it
+     once per layout and hand the result to CSS, which keeps ownership of the
+     design; these values only ever act as a floor. */
+  var sticky = document.querySelector('.hero-sticky');
+  var copyEl = document.querySelector('.hero-copy');
+  var cardEl = document.querySelector('.media-card');
+  var meterEl = document.getElementById('rotation-meter');
+  var storyEl = document.querySelector('.story__item');
+
+  function topOf(el) {
+    if (!el) return Infinity;
+    var cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return Infinity;
+    return el.getBoundingClientRect().top;
+  }
+
+  function syncHeroLayout() {
+    if (!sticky) return;
+    var vh = window.innerHeight;
+
+    // clear any value we set before measuring, or we would measure our own
+    // correction and oscillate on every resize
+    sticky.style.removeProperty('--meter-bottom');
+
+    var copyTop = topOf(copyEl);
+    var cardTop = topOf(cardEl);
+    var GAP = 22;
+
+    // The TALLEST caption, not the first: their texts differ in length, and
+    // measuring the short one left the long ones overlapping by 16px.
+    var storyH = 92;
+    document.querySelectorAll('.story__item').forEach(function (el) {
+      if (el.offsetHeight > storyH) storyH = el.offsetHeight;
+    });
+
+    // Desktop: captions sit at 46% unless the block underneath reaches up
+    // into them, in which case they rise just enough to clear it.
+    var wanted = vh * 0.46, ceiling = vh * 0.14;
+    sticky.style.setProperty('--story-top-l',
+      Math.max(ceiling, Math.min(wanted, copyTop - storyH - GAP)) + 'px');
+    sticky.style.setProperty('--story-top-r',
+      Math.max(ceiling, Math.min(wanted, cardTop - storyH - GAP)) + 'px');
+
+    // Bottom-anchored tiers use this as a floor (see the ≤900px rules).
+    sticky.style.setProperty('--copy-clear',
+      Math.max(0, vh - copyTop + 14) + 'px');
+
+    // The meter is centred: on narrower desktops the copy block reaches the
+    // middle of the screen and they cross. Lift it above the copy only then.
+    if (meterEl && copyEl && vh) {
+      var m = meterEl.getBoundingClientRect(), c = copyEl.getBoundingClientRect();
+      var overX = Math.min(m.right, c.right) - Math.max(m.left, c.left);
+      var overY = Math.min(m.bottom, c.bottom) - Math.max(m.top, c.top);
+      if (overX > 2 && overY > 2) {
+        sticky.style.setProperty('--meter-bottom', (vh - c.top + 14) + 'px');
+      }
+    }
+  }
+
+  window.addEventListener('resize', syncHeroLayout);
+  // fonts change the copy block's height, so re-measure once they land
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeroLayout);
+  setTimeout(syncHeroLayout, 0);
+  setTimeout(syncHeroLayout, 1300);
+
   /* Debug hook: ?scrub=0.5 freezes the scrub at a fixed progress
      (used for visual QA screenshots — inert in normal use). */
   var scrubOverride = parseFloat(

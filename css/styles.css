@@ -390,7 +390,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- Scroll-synced story captions (opacity/motion driven by main.js) ---- */
 .story__item {
   position: absolute;
-  top: 46%;
+  /* 46% par defaut ; js/main.js abaisse cette valeur quand le bloc situe
+     dessous (texte a gauche, carte a droite) remonte jusqu'a la legende */
+  top: var(--story-top-l, 46%);
   z-index: 3;
   max-width: 230px;
   opacity: 0;                    /* JS animates in sync with the scrub */
@@ -398,7 +400,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   will-change: opacity, transform;
 }
 .story__item--left  { left: var(--gutter); }
-.story__item--right { right: var(--gutter); text-align: right; }
+.story__item--right { right: var(--gutter); text-align: right;
+                      top: var(--story-top-r, 46%); }
 
 .story__kicker {
   display: inline-block;
@@ -431,7 +434,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .rotation-meter {
   position: absolute;
   left: 50%;
-  bottom: 16px;
+  /* 16px par defaut ; js/main.js le releve quand le bloc de texte atteint
+     le centre de l'ecran (ecrans etroits) */
+  bottom: var(--meter-bottom, 16px);
   transform: translateX(-50%);
   z-index: 3;
   display: flex;
@@ -713,7 +718,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   }
   .hero-title__line { font-size: min(11.5vw, 8vh); }
 
-  .jersey { height: 40vh; bottom: 31vh; }
+  /* Named so the caption strip can be anchored to the top of the jersey.
+     Short viewports get a smaller jersey: at 900x800 the band between the
+     headline and the jersey was 16px, which fits nothing. */
+  .hero-sticky { --jersey-h: 40vh; --jersey-bottom: 31vh; }
+  .jersey { height: var(--jersey-h); bottom: var(--jersey-bottom); }
 
   .hero-copy {
     max-width: none;
@@ -732,9 +741,22 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     left: var(--gutter);
     right: var(--gutter);
     top: auto;
-    bottom: calc(31vh + 40vh + 8px);     /* just above the jersey box */
+    /* just above the jersey box, but never lower than the measured top of
+       the copy block (js/main.js --copy-clear) */
+    bottom: max(calc(var(--jersey-bottom) + var(--jersey-h) + 8px),
+                var(--copy-clear, 0px));
     max-width: none;
     text-align: center;
+  }
+  /* The strip sits over the giant headline on shorter screens: grey on grey
+     was unreadable. A soft panel guarantees contrast whatever passes behind,
+     and reuses the treatment already on the rotation meter. */
+  .story__item {
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: rgba(240, 239, 237, .84);
+    -webkit-backdrop-filter: blur(7px);
+    backdrop-filter: blur(7px);
   }
   .story__kicker { padding-bottom: 3px; margin-bottom: 4px; font-size: 11px; }
   .story__title  { font-size: 14px; }
@@ -742,7 +764,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
   /* Compact meter, tucked under the caption strip — clear of the CTA */
   .rotation-meter {
-    bottom: calc(31vh + 40vh - 34px);
+    bottom: max(calc(var(--jersey-bottom) + var(--jersey-h) - 34px),
+                calc(var(--copy-clear, 0px) - 42px));
     padding: 6px 12px;
   }
   .rotation-meter__line { width: 72px; }
@@ -750,12 +773,20 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .rotation-meter__deg { min-width: 34px; }
 }
 
-/* ---- Short desktop viewports (laptops ~1366x640): the mid-height captions
-   collided with the bottom copy block. Raise them into the free band under
-   the headline instead of hiding them — the narration stays. ---- */
-@media (min-width: 901px) and (max-height: 700px) {
-  .story__item { top: 30%; max-width: 200px; }
+/* Ecrans courts : plus de seuil arbitraire, la remontee des legendes est
+   calculee au pixel par js/main.js (voir --story-top-l / --story-top-r). */
+@media (min-width: 901px) and (max-height: 760px) {
   .story__text { font-size: 12px; }
+  .story__item { max-width: 200px; }
+}
+
+/* ---- Ecran court en portrait (<=900 de large, <=860 de haut) ------------
+   nav + titre + maillot + texte occupaient 736px sur 800 : la bande
+   narrative n'existait plus. Le maillot cede la place. ---- */
+@media (max-width: 900px) and (max-height: 860px) and (orientation: portrait) {
+  .hero-sticky { --jersey-h: 33vh; --jersey-bottom: 27vh; }
+  .hero-title__line { font-size: min(10vw, 7vh); }
+  .story__text { display: none; }
 }
 
 /* ---- Phone only (< 768px): burger nav, no room for the media card ------- */
@@ -774,15 +805,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   /* the copy would run underneath the media card at full width */
   .hero-copy { right: 300px; }
 
-  /* More headroom than a phone, but the free band sits UNDER the jersey
-     here (31vh of floor), not above it — above, caption + meter collided
-     with the headline on one side and the collar on the other. */
-  .story__item,
-  .story__item--left,
-  .story__item--right { bottom: calc(31vh - 56px); }
+  /* Placing these under the jersey put them straight on the copy block
+     (mesure : 564x45px de recouvrement en 900x800). They stay in the band
+     above the jersey, like the phone, and simply keep their description. */
   .story__text { display: block; font-size: 12.5px; margin-top: 4px; }
-
-  .rotation-meter { bottom: calc(31vh - 94px); }
 }
 
 /* ==========================================================================
