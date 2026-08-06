@@ -87,6 +87,17 @@
   /* Runtime copy in the active language (see js/i18n.js) */
   var T = (window.TDD_I18N && window.TDD_I18N.t) || { scroll: 'Scroll', rotation: 'Rotation' };
 
+  /* Horizontal placement of the jersey: centred everywhere except on a phone
+     held sideways, where the hero lays out side by side (see styles.css).
+     Resolved here in JS so the transform string stays plain CSS. */
+  var landscapeHero = window.matchMedia(
+    '(max-width: 950px) and (max-height: 520px) and (orientation: landscape)');
+  var jerseyX = landscapeHero.matches ? '0px' : '-50%';
+  function syncJerseyX() { jerseyX = landscapeHero.matches ? '0px' : '-50%'; }
+  if (landscapeHero.addEventListener) landscapeHero.addEventListener('change', syncJerseyX);
+  else if (landscapeHero.addListener) landscapeHero.addListener(syncJerseyX);   // older Safari
+  window.addEventListener('resize', syncJerseyX);
+
   /* Debug hook: ?scrub=0.5 freezes the scrub at a fixed progress
      (used for visual QA screenshots — inert in normal use). */
   var scrubOverride = parseFloat(
@@ -363,11 +374,12 @@
       // rotation advances (origin at the hem, so it rises over the
       // receding headline instead of sinking below the fold).
       // `rise` only differs from 0 during the load-in settle.
-      // The X offset comes from CSS (--jersey-x) so a layout can move the
-      // jersey off-centre — the landscape-phone hero puts it on the right —
-      // without this per-frame write overwriting it.
+      // Literal offset, never var(). Some mobile browsers fail to parse a
+      // custom property inside a transform function and then drop the WHOLE
+      // transform — the jersey lost its -50% and sat half a width to the
+      // right. Seen on a real phone; desktop emulation centred it correctly.
       jersey.style.transform =
-        'translateX(var(--jersey-x, -50%)) translateY(' + rise.toFixed(1) + 'px)' +
+        'translateX(' + jerseyX + ') translateY(' + rise.toFixed(1) + 'px)' +
         ' scale(' + (1 + smooth * 0.2) + ')';
     }
     if (progress) {

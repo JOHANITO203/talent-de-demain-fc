@@ -736,12 +736,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .hero-title { top: calc(var(--nav-h) + 2px); }
   .hero-title__line { font-size: min(5.5vw, 10vh); }
 
+  /* main.js matches this same query to drop the -50% centring */
   .jersey {
     height: 64vh;
     bottom: 0;
     left: auto;
     right: 5vw;
-    --jersey-x: 0px;      /* read by the per-frame transform in main.js */
   }
 
   .hero-copy {
