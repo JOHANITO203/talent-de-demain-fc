@@ -31,9 +31,12 @@
        at their start position without ever hiding them for no-JS users. -->
   <script>document.documentElement.classList.add('js-anim');</script>
   <!-- ?v= : cache-busting — bump on every CSS/JS change -->
-  <link rel="stylesheet" href="css/styles.css?v=24">
+  <link rel="stylesheet" href="css/styles.css?v=25">
   <!-- Preload the scrub video so the hero is ready before the user scrolls -->
-  <link rel="preload" as="video" href="assets/video/jersey-scrub.mp4" type="video/mp4" media="(min-width: 768px)">
+  <!-- Seuil aligné sur l'aiguillage de js/hero-sequence.js : au-dessous de
+       1025px le héro utilise la séquence d'images, précharger la vidéo y
+       ferait télécharger 8 Mo pour rien (une tablette les payait). -->
+  <link rel="preload" as="video" href="assets/video/jersey-scrub.mp4" type="video/mp4" media="(min-width: 1025px)">
 
   <!-- Structured data: lets search engines show the club as an entity
        (name, logo, socials) rather than a plain blue link.
@@ -78,7 +81,7 @@
   <!-- ============ NAVIGATION ============ -->
   <header class="nav">
     <a class="nav__brand" href="index.html" aria-label="Talent de Demain FC — accueil">
-      <img src="assets/img/logo-crest.png?v=2" alt="Blason du Talent de Demain FC" width="52" height="68">
+      <img src="assets/img/logo-crest.png?v=3" alt="Blason du Talent de Demain FC" width="52" height="68">
     </a>
 
     <nav class="nav__menu" aria-label="Principal">
