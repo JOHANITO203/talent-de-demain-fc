@@ -31,9 +31,12 @@
        at their start position without ever hiding them for no-JS users. -->
   <script>document.documentElement.classList.add('js-anim');</script>
   <!-- ?v= : cache-busting — bump on every CSS/JS change -->
-  <link rel="stylesheet" href="css/styles.css?v=18">
-  <!-- Preload the scrub video so the hero is ready before the user scrolls -->
-  <link rel="preload" as="video" href="assets/video/jersey-scrub.mp4" type="video/mp4" media="(min-width: 768px)">
+  <link rel="stylesheet" href="css/styles.css?v=19">
+  <!-- Le hero utilise une séquence d'images (assets/seq/), pas une vidéo :
+       voir l'en-tête de js/main.js. La première image est préchargée pour
+       que le maillot apparaisse sans attente. -->
+  <link rel="preload" as="image" href="assets/seq/d_001.webp?v=1" media="(min-width: 768px)">
+  <link rel="preload" as="image" href="assets/seq/m_001.webp?v=1" media="(max-width: 767px)">
 
   <!-- Structured data: lets search engines show the club as an entity
        (name, logo, socials) rather than a plain blue link.
@@ -113,9 +116,8 @@
            the video's studio background into the page background — and crop
            away any corner watermark. -->
       <div class="jersey" id="jersey">
-        <video id="jersey-video" muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
         <canvas id="jersey-canvas" aria-label="Maillot du Talent de Demain FC en rotation"></canvas>
-        <noscript><img class="jersey__fallback" src="assets/img/jersey-poster.webp?v=2" alt="Maillot du Talent de Demain FC"></noscript>
+        <noscript><img class="jersey__fallback" src="assets/seq/d_001.webp?v=1" alt="Maillot du Talent de Demain FC"></noscript>
       </div>
 
       <!-- Bottom-left copy block -->
@@ -183,6 +185,6 @@
 
   <script src="js/i18n.js?v=2"></script>
   <script src="js/nav.js?v=2"></script>
-  <script src="js/main.js?v=22"></script>
+  <script src="js/main.js?v=23"></script>
 </body>
 </html>

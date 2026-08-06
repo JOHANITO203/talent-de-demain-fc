@@ -31,19 +31,35 @@
   });
   setTimeout(ready, 1200); // safety net
 
-  /* ---- 2. Kinetic page title -------------------------------------------- */
+  /* ---- 2. Kinetic page title --------------------------------------------
+     Letters are grouped WORD BY WORD. Loose per-letter spans are each an
+     inline-block, so the browser may break a line between any two of them —
+     that is how "EVENEMENTS" came out split as "EVENEMEN / TS" on a phone.
+     Giving every word its own nowrap box confines breaks to real spaces. */
   document.querySelectorAll('.page-hero__title').forEach(function (title) {
-    var text = title.textContent;
+    var text = title.textContent.trim();
     title.textContent = '';
     title.setAttribute('aria-label', text);
-    for (var k = 0; k < text.length; k++) {
-      var ch = document.createElement('span');
-      ch.className = 'char';
-      ch.setAttribute('aria-hidden', 'true');
-      ch.style.setProperty('--i', k);
-      ch.textContent = text[k] === ' ' ? ' ' : text[k];
-      title.appendChild(ch);
-    }
+
+    var i = 0;
+    text.split(/(\s+)/).forEach(function (chunk) {
+      if (!chunk) return;
+      if (/^\s+$/.test(chunk)) {                 // a real, breakable space
+        title.appendChild(document.createTextNode(' '));
+        return;
+      }
+      var word = document.createElement('span');
+      word.className = 'word';
+      word.setAttribute('aria-hidden', 'true');
+      for (var k = 0; k < chunk.length; k++) {
+        var ch = document.createElement('span');
+        ch.className = 'char';
+        ch.style.setProperty('--i', i++);
+        ch.textContent = chunk[k];
+        word.appendChild(ch);
+      }
+      title.appendChild(word);
+    });
   });
 
   /* ---- 3. Reveal on scroll ---------------------------------------------- */

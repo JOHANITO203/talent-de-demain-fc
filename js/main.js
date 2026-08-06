@@ -1,29 +1,29 @@
 /* ==========================================================================
-   Talent de Demain FC — scroll-driven jersey video
+   Talent de Demain FC — scroll-driven jersey rotation
    --------------------------------------------------------------------------
-   How it works
+   The rotation is an IMAGE SEQUENCE, not a video. That decision was forced by
+   real devices: a <video> only yields frames once the browser agrees to play
+   it, and phones routinely refuse — data saver, battery saver, autoplay
+   policy — leaving the hero frozen on frame one. Seeking a paused video is
+   just as unreliable there.
+
+   49 stills cover the full turn. They are lighter than the clip they replace
+   (2.2 MB against 8.3 MB desktop, 0.9 MB on phones), they need no codec, no
+   playback permission and no seeking, so desktop and mobile behave the same.
+
    1. The hero is pinned (position: sticky) inside a tall scroll runway
-      (.hero-track). Scroll progress through that runway maps 0→1.
-   2. Progress is smoothed with a lerp inside a requestAnimationFrame loop,
-      then converted to a target video time (scrubs back AND forward).
-   3. The <video> element is only a frame source: it was re-encoded
-      all-intra (every frame is a keyframe) so currentTime seeks resolve
-      almost instantly. Each resolved seek repaints the canvas.
-   4. Rendering is WebGL: a small shader keys out the clip's beige studio
-      backdrop in real time (the backdrop color is sampled from the frame's
-      own left/right edges, so it adapts to the vignette and to lighting
-      changes across the rotation). The result is a true transparent cutout
-      of the jersey that melts into the page — and removes any watermark
-      along with the backdrop. A 2D-canvas + CSS-blend fallback covers
-      browsers without WebGL.
-   5. A lighter 540p encode is used on small screens.
+      (.hero-track); scroll through it maps 0→1.
+   2. That value is smoothed with a lerp in a requestAnimationFrame loop and
+      converted to a frame index — forwards and backwards.
+   3. WebGL keys the studio backdrop out of each still in real time, sampling
+      the frame's own left/right margins, so the jersey melts into the page.
+      A 2D-canvas + CSS-blend fallback covers browsers without WebGL.
    ========================================================================== */
 
 (function () {
   'use strict';
 
   var track    = document.getElementById('hero-track');
-  var video    = document.getElementById('jersey-video');
   var canvas   = document.getElementById('jersey-canvas');
   var jersey   = document.getElementById('jersey');
   var progress = document.getElementById('scroll-progress');
@@ -80,7 +80,7 @@
     titleLines.forEach(function (l) { l.classList.add('is-in'); });
   }, 1200);
 
-  if (!track || !video || !canvas) return;
+  if (!track || !canvas) return;
 
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -105,22 +105,31 @@
   );
   var hasOverride = !isNaN(scrubOverride);
 
-  /* ---- Source selection: light encode for small screens ---------------- */
+  /* ---- Frame sequence ---------------------------------------------------
+     Phones get the half-size set. Every still is fetched up front: the whole
+     sequence is smaller than a single second of the video it replaces, and a
+     half-loaded rotation would stutter. */
   var isSmall = window.matchMedia('(max-width: 767px)').matches;
-  var srcUrl = (isSmall
-    ? 'assets/video/jersey-scrub-540.mp4'
-    : 'assets/video/jersey-scrub.mp4') + '?v=7'; // bump on video re-encode
-  var srcFps = 24;
+  var FRAMES = 49;
+  var PREFIX = 'assets/seq/' + (isSmall ? 'm_' : 'd_');
+  var frames = [];
+  var framesReady = 0;
 
-  /* Fully prefetch the clip into a Blob before wiring it to the <video>.
-     Every seek is then served from memory: instant scrubbing, and no
-     dependency on the server supporting HTTP Range requests (a seek into
-     un-buffered data on a Range-less server stalls forever otherwise).
-     Falls back to plain streaming if the fetch fails. */
-  fetch(srcUrl)
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
-    .then(function (blob) { video.src = URL.createObjectURL(blob); video.load(); })
-    .catch(function () { video.src = srcUrl; video.load(); });
+  function pad(n) { return n < 10 ? '00' + n : n < 100 ? '0' + n : '' + n; }
+
+  for (var fi = 1; fi <= FRAMES; fi++) {
+    (function (i) {
+      var img = new Image();
+      img.decoding = 'async';
+      img.onload = function () {
+        framesReady++;
+        if (i === 1) { onFirstFrame(); }      // paint as soon as we can
+      };
+      img.onerror = function () { framesReady++; };
+      img.src = PREFIX + pad(i) + '.webp?v=1';
+      frames[i - 1] = img;
+    })(fi);
+  }
 
   /* ======================================================================
      WebGL renderer — keys the studio backdrop out of each frame
@@ -187,31 +196,24 @@
 
   function initWebGL() {
     gl = canvas.getContext('webgl', {
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false
+      alpha: true, premultipliedAlpha: true, antialias: false
     });
     if (!gl) return false;
 
     function compile(type, src) {
-      var s = gl.createShader(type);
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) return null;
-      return s;
+      var sh = gl.createShader(type);
+      gl.shaderSource(sh, src);
+      gl.compileShader(sh);
+      return gl.getShaderParameter(sh, gl.COMPILE_STATUS) ? sh : null;
     }
-    var vs = compile(gl.VERTEX_SHADER, VERT);
-    var fs = compile(gl.FRAGMENT_SHADER, FRAG);
+    var vs = compile(gl.VERTEX_SHADER, VERT), fs = compile(gl.FRAGMENT_SHADER, FRAG);
     if (!vs || !fs) { gl = null; return false; }
 
     var prog = gl.createProgram();
-    gl.attachShader(prog, vs);
-    gl.attachShader(prog, fs);
-    gl.linkProgram(prog);
+    gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { gl = null; return false; }
     gl.useProgram(prog);
 
-    // Fullscreen quad
     var buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER,
@@ -220,7 +222,6 @@
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
-    // Video texture
     glTex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, glTex);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -230,221 +231,129 @@
 
     gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
     glTexelLoc = gl.getUniformLocation(prog, 'uTexel');
-    gl.uniform2f(glTexelLoc, 1 / 900, 1 / 1080); // updated once metadata loads
+    gl.uniform2f(glTexelLoc, 1 / (isSmall ? 450 : 900), 1 / (isSmall ? 540 : 1080));
     return true;
   }
 
   var ctx2d = null;
   if (!initWebGL()) {
-    // Fallback: plain 2D frames + CSS multiply blend (see styles.css)
-    document.documentElement.classList.add('no-webgl');
+    document.documentElement.classList.add('no-webgl');   // CSS blend fallback
     ctx2d = canvas.getContext('2d');
   }
 
   /* ---- State ------------------------------------------------------------ */
-  var duration = 0;      // video duration (s), known after metadata loads
-  var target   = 0;      // raw scroll progress   0..1
-  var smooth   = 0;      // lerped progress, drives the LAYOUT effects
-  var vSmooth  = 0;      // lerped progress, drives the VIDEO position
-  var seekBusy = false;  // a currentTime seek is in flight
-  var pendingT = -1;     // seek requested while busy — run it next
+  var target  = 0;    // raw scroll progress 0..1
+  var smooth  = 0;    // lerped, drives the LAYOUT effects
+  var vSmooth = 0;    // lerped, drives the ROTATION
+  var drawn   = -1;   // frame index currently on the canvas
 
-  /* ---- Canvas sizing (device-pixel-ratio aware, no blur) ---------------- */
+  /* ---- Canvas sizing (device-pixel-ratio aware) -------------------------- */
   function resizeCanvas() {
     var rect = canvas.getBoundingClientRect();
-    var dpr  = Math.min(window.devicePixelRatio || 1, 2); // cap DPR: perf
-    var w = Math.round(rect.width  * dpr);
-    var h = Math.round(rect.height * dpr);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);   // cap DPR: perf
+    var w = Math.round(rect.width * dpr), h = Math.round(rect.height * dpr);
     if (canvas.width !== w || canvas.height !== h) {
-      canvas.width  = w;
-      canvas.height = h;
+      canvas.width = w; canvas.height = h;
       if (gl) gl.viewport(0, 0, w, h);
-      drawFrame(); // repaint at the new size
+      drawn = -1;                 // force a repaint at the new size
+      paint(vSmooth);
     }
   }
 
-  /* ---- Painting --------------------------------------------------------- */
-  function drawFrame() {
-    if (video.readyState < 2) return; // no decodable frame yet
+  /* ---- Painting ----------------------------------------------------------
+     Only touches the canvas when the frame actually changes, so scrolling
+     within one step costs nothing. */
+  function paint(p) {
+    var idx = Math.round(Math.max(0, Math.min(1, p)) * (FRAMES - 1));
+    if (idx === drawn) return;
+    var img = frames[idx];
+    if (!img || !img.complete || !img.naturalWidth) return;   // not here yet
     if (gl) {
       gl.bindTexture(gl.TEXTURE_2D, glTex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     } else if (ctx2d) {
-      ctx2d.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+      ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
     }
+    drawn = idx;
   }
 
-  /* ---- Seeking (never more than one seek in flight) ---------------------- */
-  var seekTimer = 0;
-  var seekFails = 0;      // consecutive seeks that never reported back
-  var loopMode = false;   // set when this device cannot scrub at all
-
-  /* Mobile browsers commonly refuse to decode frames for a video that has
-     never played: seeking a cold element leaves the canvas on frame 0, which
-     is exactly how the hero looked frozen on a real phone. A muted play/pause
-     initialises the decoder — allowed without a user gesture because the
-     element is muted and playsinline. */
-  function primeDecoder() {
-    try {
-      var p = video.play();
-      if (p && p.then) {
-        p.then(function () { video.pause(); drawFrame(); })
-         .catch(function () { /* blocked: the loop fallback covers it */ });
-      } else {
-        video.pause();
-      }
-    } catch (e) { /* ignore */ }
-  }
-
-  /* Draw once the decoded frame is actually presented. Without this the
-     canvas can be painted before the new frame exists, showing the old one. */
-  function drawWhenReady() {
-    drawFrame();
-    if (video.requestVideoFrameCallback) {
-      try { video.requestVideoFrameCallback(function () { drawFrame(); }); }
-      catch (e) { /* ignore */ }
-    }
-  }
-
-  /* Last resort: if this device simply will not seek, let the clip play on a
-     loop. The jersey keeps turning — it is no longer tied to the scroll, but
-     the hero stays alive instead of standing still. */
-  function enterLoopMode() {
-    if (loopMode) return;
-    loopMode = true;
-    video.loop = true;
-    video.play().catch(function () {});
-  }
-
-  function requestSeek(t) {
-    if (loopMode || seekBusy) { if (!loopMode) pendingT = t; return; }
-    seekBusy = true;
-    video.currentTime = t;
-    // Watchdog: if 'seeked' never fires, unblock the pipeline so the scrub
-    // self-heals; three misses in a row means seeking is dead on this device.
-    clearTimeout(seekTimer);
-    seekTimer = setTimeout(function () {
-      seekBusy = false;
-      if (++seekFails >= 3) enterLoopMode();
-    }, 600);
-  }
-
-  video.addEventListener('seeked', function () {
-    clearTimeout(seekTimer);
-    seekFails = 0;
-    drawWhenReady();
-    seekBusy = false;
-    if (pendingT >= 0) {           // a newer position arrived meanwhile
-      var t = pendingT;
-      pendingT = -1;
-      requestSeek(t);
-    }
-  });
+  /* ---- Autoplay intro ------------------------------------------------------
+     On load the jersey turns a full circle by itself, then hands over to the
+     scroll. Only the ROTATION follows the intro curve — the layout effects
+     keep tracking the (still idle) scroll, so nothing snaps when it ends.
+     The turn is seamless, so landing back on 0 is invisible. Any scroll
+     cancels it and the rotation sweeps smoothly to the scroll position. */
+  var INTRO_SPIN_MS = 4200;
+  var INTRO_RISE_MS = 900;
+  var introActive = false;
+  var introT0 = -1;
 
   /* ---- Scroll progress --------------------------------------------------- */
   function readScroll() {
     if (hasOverride) { target = Math.min(1, Math.max(0, scrubOverride)); return; }
     var runway = track.offsetHeight - window.innerHeight;
     if (runway <= 0) { target = 0; return; }
-    var y = -track.getBoundingClientRect().top; // px scrolled into the track
+    var y = -track.getBoundingClientRect().top;
     target = Math.min(1, Math.max(0, y / runway));
   }
 
   window.addEventListener('scroll', function () {
-    // The first scroll always wins over the autoplay intro.
     if (introActive && window.pageYOffset > 2) introActive = false;
     readScroll();
   }, { passive: true });
   window.addEventListener('resize', function () { readScroll(); resizeCanvas(); });
 
-  /* ---- Autoplay intro ------------------------------------------------------
-     On load the jersey spins a full turn by itself, then hands over to the
-     scroll. Only the VIDEO position follows the intro curve — the layout
-     effects keep tracking the (still idle) scroll, so nothing snaps when the
-     spin ends. The turn is seamless (last frame ≈ first frame), so landing
-     back on 0 is invisible. Any scroll cancels it, and the rotation then
-     sweeps smoothly to the scroll position instead of jumping. */
-  var INTRO_SPIN_MS = 4200;
-  var INTRO_RISE_MS = 900;
-  var introActive = false;
-  var introT0 = -1;
-
   /* ---- Main loop --------------------------------------------------------- */
-  var FRAME_STEP = 1 / srcFps; // skip sub-frame seeks
-
   function tick(now) {
-    var rise = 0; // jersey settle-in offset during the intro
+    var rise = 0;
 
     if (introActive) {
-      if (introT0 < 0) introT0 = now;         // same clock as rAF
+      if (introT0 < 0) introT0 = now;
       var p = Math.min(1, (now - introT0) / INTRO_SPIN_MS);
-      // easeInOutCubic — gentle start, gentle stop
+      // easeInOutCubic
       vSmooth = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
-      var r = Math.min(1, (now - introT0) / INTRO_RISE_MS);
-      rise = 26 * Math.pow(1 - r, 3);
-      if (p >= 1) { introActive = false; vSmooth = 0; } // seamless loop point
+      rise = 26 * Math.pow(1 - Math.min(1, (now - introT0) / INTRO_RISE_MS), 3);
+      if (p >= 1) { introActive = false; vSmooth = 0; }
     } else {
       vSmooth += (target - vSmooth) * 0.14;
     }
 
-    // Layout effects always follow the scroll — never the intro.
-    smooth += (target - smooth) * 0.14;
-    if (hasOverride) { smooth = target; vSmooth = target; } // QA: exact frame
+    smooth += (target - smooth) * 0.14;                 // layout follows scroll
+    if (hasOverride) { smooth = target; vSmooth = target; }
 
-    if (loopMode) {
-      // seeking is unavailable here: just keep painting the playing clip
-      drawFrame();
-    } else if (duration > 0) {
-      // Clamp a hair under duration: seeking exactly to the end can stall.
-      var t = Math.min(vSmooth * duration, duration - 0.05);
-      if (Math.abs(t - video.currentTime) > FRAME_STEP / 2) {
-        requestSeek(t);
-      }
-    }
+    paint(vSmooth);
 
-    // Cinematic touches tied to the same progress value:
-    // headline lines drift apart and recede in depth, jersey grows slightly.
-    var drift = smooth * 6; // vw
+    // Headline drifts apart and recedes; the jersey comes forward.
+    var drift = smooth * 6;
     titleLines.forEach(function (line) {
       var dir = parseFloat(line.dataset.parallax || '0');
       line.style.transform = 'translateX(' + (dir * drift) + 'vw)' +
                              ' scale(' + (1 - smooth * 0.08).toFixed(4) + ')';
     });
-    if (heroTitle) {
-      // The title recedes into the background as the jersey comes forward.
-      heroTitle.style.opacity = (1 - smooth * 0.6).toFixed(3);
-    }
+    if (heroTitle) heroTitle.style.opacity = (1 - smooth * 0.6).toFixed(3);
     if (jersey) {
-      // Foreground push: the jersey grows toward the viewer as the
-      // rotation advances (origin at the hem, so it rises over the
-      // receding headline instead of sinking below the fold).
-      // `rise` only differs from 0 during the load-in settle.
-      // Literal offset, never var(). Some mobile browsers fail to parse a
-      // custom property inside a transform function and then drop the WHOLE
-      // transform — the jersey lost its -50% and sat half a width to the
-      // right. Seen on a real phone; desktop emulation centred it correctly.
+      // Literal offset, never var(): some mobile browsers drop a transform
+      // that contains a custom property, which left the jersey off-centre.
       jersey.style.transform =
         'translateX(' + jerseyX + ') translateY(' + rise.toFixed(1) + 'px)' +
         ' scale(' + (1 + smooth * 0.2) + ')';
     }
-    if (progress) {
-      progress.style.transform = 'scaleY(' + smooth + ')';
-    }
+    if (progress) progress.style.transform = 'scaleY(' + smooth + ')';
 
-    // Story captions: fade/slide in and out inside their rotation window.
-    var FADE = 0.05; // progress span used for each fade edge
-    storyItems.forEach(function (s) {
-      var a = Math.min((smooth - s.from) / FADE, (s.to - smooth) / FADE, 1);
-      a = Math.max(0, Math.min(1, a));
-      var shift = (1 - a) * 18 * (s.right ? 1 : -1); // slide from the edge
-      s.el.style.opacity = a.toFixed(3);
-      s.el.style.transform = 'translateX(' + shift.toFixed(1) + 'px)';
+    // Story captions fade and slide inside their own window of the rotation.
+    var FADE = 0.05;
+    storyItems.forEach(function (item) {
+      var a = Math.max(0, Math.min(1,
+        Math.min((smooth - item.from) / FADE, (item.to - smooth) / FADE, 1)));
+      item.el.style.opacity = a.toFixed(3);
+      item.el.style.transform =
+        'translateX(' + ((1 - a) * 18 * (item.right ? 1 : -1)).toFixed(1) + 'px)';
     });
 
-    // Rotation meter follows the VIDEO, so the intro spin reads live too.
-    var deg = Math.round(vSmooth * 360);
-    if (rotDeg)  rotDeg.textContent = deg + '°';
+    // Meter reads the rotation, so the intro spin shows live too.
+    if (rotDeg) rotDeg.textContent = Math.round(vSmooth * 360) + '\u00b0';
     if (rotLine) rotLine.style.transform = 'scaleX(' + vSmooth + ')';
     if (rotLabel) {
       rotLabel.style.opacity = vSmooth < 0.02 ? '1' : '.45';
@@ -457,34 +366,17 @@
   /* ---- Boot -------------------------------------------------------------- */
   var booted = false;
 
-  function onMeta() {
-    duration = video.duration;
-    if (gl && glTexelLoc && video.videoWidth) {
-      gl.uniform2f(glTexelLoc, 1 / video.videoWidth, 1 / video.videoHeight);
-    }
-    resizeCanvas();
-  }
-
-  function onReady() {
-    if (booted) return; // guard against listener + readyState double boot
+  function onFirstFrame() {
+    if (booted) return;
     booted = true;
-    drawFrame();    // paint the first frame immediately
-    primeDecoder(); // …then wake the decoder so later seeks produce frames
-    if (reducedMotion && !hasOverride) return; // a11y: static frame, no scrub
+    resizeCanvas();
+    paint(0);
+    if (reducedMotion && !hasOverride) return;   // a11y: still frame, no motion
     readScroll();
-    // Autoplay the reveal spin only from the top of the page (a reload
-    // restored mid-scroll keeps the scroll-driven position instead).
-    if (!hasOverride && window.pageYOffset < 4) {
-      introActive = true;
-      introT0 = -1;
-    }
+    if (!hasOverride && window.pageYOffset < 4) { introActive = true; introT0 = -1; }
     requestAnimationFrame(tick);
   }
 
-  video.addEventListener('loadedmetadata', onMeta);
-  video.addEventListener('loadeddata', onReady, { once: true });
-
-  // If the (cached) video fired its events before listeners attached:
-  if (video.readyState >= 1) onMeta();
-  if (video.readyState >= 2) onReady();
+  // the first image may already be cached and complete before onload attaches
+  if (frames[0] && frames[0].complete && frames[0].naturalWidth) onFirstFrame();
 })();

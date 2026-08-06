@@ -37,6 +37,13 @@
   white-space: nowrap;
 }
 
+/* each word is one unbreakable box: without it the browser wraps between
+   two letters, which split "ÉVÉNEMENTS" as "ÉVÉNEMEN / TS" on a phone */
+.page-hero__title .word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 /* per-letter entrance — same motion grammar as the landing headline */
 .page-hero__title .char {
   display: inline-block;
