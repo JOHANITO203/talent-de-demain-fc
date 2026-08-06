@@ -154,10 +154,21 @@
 
     // The meter is centred: on narrower desktops the copy block reaches the
     // middle of the screen and they cross. Lift it above the copy only then.
-    if (meterEl && copyEl && vh) {
-      var m = meterEl.getBoundingClientRect(), c = copyEl.getBoundingClientRect();
-      var overX = Math.min(m.right, c.right) - Math.max(m.left, c.left);
-      var overY = Math.min(m.bottom, c.bottom) - Math.max(m.top, c.top);
+    if (meterEl && copyEl && vh && meterEl.offsetParent === sticky) {
+      /* Layout geometry (offset*), NOT getBoundingClientRect. The meter plays
+         an entrance animation that holds it 18px below its resting place for
+         ~2s after load, and rects include transforms. Measuring during that
+         window reported a 7px gap where the settled layout has an 11px
+         overlap, so the guard quietly declined to fire and the meter stayed
+         on the text — the 1024×640 case. offset* ignores transforms, so it
+         describes where the meter actually comes to rest. */
+      var mW = meterEl.offsetWidth, mH = meterEl.offsetHeight;
+      var sRect = sticky.getBoundingClientRect();
+      var mTop  = sRect.top + meterEl.offsetTop;
+      var mLeft = sRect.left + meterEl.offsetLeft - mW / 2; // translateX(-50%)
+      var c = copyEl.getBoundingClientRect();
+      var overX = Math.min(mLeft + mW, c.right) - Math.max(mLeft, c.left);
+      var overY = Math.min(mTop + mH, c.bottom) - Math.max(mTop, c.top);
       if (overX > 2 && overY > 2) {
         sticky.style.setProperty('--meter-bottom', (vh - c.top + 14) + 'px');
       }
@@ -170,12 +181,31 @@
   setTimeout(syncHeroLayout, 0);
   setTimeout(syncHeroLayout, 1300);
 
+  /* The copy block settles late and unpredictably: webfonts swap in, the text
+     re-wraps, the language toggle rewrites it. Measuring only at fixed
+     moments made the guard above a race — at 1024×640 it fired on some loads
+     and not on others, leaving the meter sitting on the text. Watching the
+     block instead removes the timing question entirely. */
+  if (window.ResizeObserver && copyEl) {
+    new ResizeObserver(syncHeroLayout).observe(copyEl);
+  }
+
   /* Debug hook: ?scrub=0.5 freezes the scrub at a fixed progress
      (used for visual QA screenshots — inert in normal use). */
   var scrubOverride = parseFloat(
     new URLSearchParams(location.search).get('scrub')
   );
   var hasOverride = !isNaN(scrubOverride);
+
+  /* ---- Where the pixels come from ---------------------------------------
+     On a touch device js/hero-sequence.js has published an image sequence:
+     no video decoder to wake, so nothing that can stall. Everything else in
+     this engine — smoothing, captions, meter, title drift, WebGL keying — is
+     shared by both paths. Only the frame source differs, which is what makes
+     the two experiences identical rather than merely similar.
+     frameSrc is null on desktop, and every guard below then falls through to
+     the original <video> path unchanged. */
+  var frameSrc = window.tddFrameSource || null;
 
   /* ---- Source selection: light encode for small screens ---------------- */
   var isSmall = window.matchMedia('(max-width: 767px)').matches;
@@ -189,10 +219,12 @@
      dependency on the server supporting HTTP Range requests (a seek into
      un-buffered data on a Range-less server stalls forever otherwise).
      Falls back to plain streaming if the fetch fails. */
-  fetch(srcUrl)
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
-    .then(function (blob) { video.src = URL.createObjectURL(blob); video.load(); })
-    .catch(function () { video.src = srcUrl; video.load(); });
+  if (!frameSrc) {
+    fetch(srcUrl)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(function (blob) { video.src = URL.createObjectURL(blob); video.load(); })
+      .catch(function () { video.src = srcUrl; video.load(); });
+  }
 
   /* ======================================================================
      WebGL renderer — keys the studio backdrop out of each frame
@@ -327,23 +359,46 @@
     var dpr  = Math.min(window.devicePixelRatio || 1, 2); // cap DPR: perf
     var w = Math.round(rect.width  * dpr);
     var h = Math.round(rect.height * dpr);
+    if (frameSrc) {
+      // That DPR-2 cap exists to spare the video decoder. An image sequence
+      // has no decoder, so a phone can be served its true pixel density —
+      // clamped to the source so we never upscale past the real detail.
+      // On an iPhone this is 843px of jersey instead of 562, at no extra
+      // download: those pixels were already fetched.
+      var real = window.devicePixelRatio || 1;
+      w = Math.min(Math.round(rect.width  * real), frameSrc.width);
+      h = Math.min(Math.round(rect.height * real), frameSrc.height);
+    }
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width  = w;
       canvas.height = h;
       if (gl) gl.viewport(0, 0, w, h);
+      lastPainted = null; // force the repaint below through the skip guard
       drawFrame(); // repaint at the new size
     }
   }
 
   /* ---- Painting --------------------------------------------------------- */
+  var lastPainted = null; // sequence path only: last image uploaded to the GPU
+
   function drawFrame() {
-    if (video.readyState < 2) return; // no decodable frame yet
+    var pixels = video;
+    if (frameSrc) {
+      // tick() runs every rAF, but the chosen image only changes when the
+      // scroll actually moves. Re-uploading a 900×1080 texture 60 times a
+      // second would drain a phone for nothing.
+      pixels = frameSrc.frameAt(vSmooth);
+      if (!pixels || pixels === lastPainted) return;
+      lastPainted = pixels;
+    } else if (video.readyState < 2) {
+      return; // no decodable frame yet
+    }
     if (gl) {
       gl.bindTexture(gl.TEXTURE_2D, glTex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     } else if (ctx2d) {
-      ctx2d.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx2d.drawImage(pixels, 0, 0, canvas.width, canvas.height);
     }
   }
 
@@ -464,7 +519,11 @@
     smooth += (target - smooth) * 0.14;
     if (hasOverride) { smooth = target; vSmooth = target; } // QA: exact frame
 
-    if (loopMode) {
+    if (frameSrc) {
+      // Nothing to seek: drawFrame() resolves vSmooth to an image itself, and
+      // skips the upload when that image has not changed.
+      drawFrame();
+    } else if (loopMode) {
       // seeking is unavailable here: just keep painting the playing clip
       drawFrame();
     } else if (duration > 0) {
@@ -530,6 +589,14 @@
   var booted = false;
 
   function onMeta() {
+    if (frameSrc) {
+      // Frame size is fixed, so the shader's sharpen taps are set once.
+      if (gl && glTexelLoc) {
+        gl.uniform2f(glTexelLoc, 1 / frameSrc.width, 1 / frameSrc.height);
+      }
+      resizeCanvas();
+      return;
+    }
     duration = video.duration;
     if (gl && glTexelLoc && video.videoWidth) {
       gl.uniform2f(glTexelLoc, 1 / video.videoWidth, 1 / video.videoHeight);
@@ -541,7 +608,7 @@
     if (booted) return; // guard against listener + readyState double boot
     booted = true;
     drawFrame();    // paint the first frame immediately
-    primeDecoder(); // …then wake the decoder so later seeks produce frames
+    if (!frameSrc) primeDecoder(); // …wake the decoder so seeks yield frames
     if (reducedMotion && !hasOverride) return; // a11y: static frame, no scrub
     readScroll();
     // Autoplay the reveal spin only from the top of the page (a reload
@@ -553,10 +620,37 @@
     requestAnimationFrame(tick);
   }
 
-  video.addEventListener('loadedmetadata', onMeta);
-  video.addEventListener('loadeddata', onReady, { once: true });
+  function bootVideo() {
+    video.addEventListener('loadedmetadata', onMeta);
+    video.addEventListener('loadeddata', onReady, { once: true });
 
-  // If the (cached) video fired its events before listeners attached:
-  if (video.readyState >= 1) onMeta();
-  if (video.readyState >= 2) onReady();
+    // If the (cached) video fired its events before listeners attached:
+    if (video.readyState >= 1) onMeta();
+    if (video.readyState >= 2) onReady();
+  }
+
+  if (frameSrc) {
+    // An image sequence fires no media events: boot as soon as the first
+    // image exists, without waiting for the other 192.
+    var waited = 0;
+    (function awaitFirstFrame() {
+      if (frameSrc.ready) { onMeta(); onReady(); return; }
+      // …but never wait forever. If the frames are missing or the network
+      // dropped, fall back to the <video> engine: a jersey that scrubs badly
+      // still beats an empty hero.
+      if (++waited > 600) {          // ≈10s of visible time at 60fps
+        frameSrc = null;
+        lastPainted = null;
+        fetch(srcUrl)
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+          .then(function (blob) { video.src = URL.createObjectURL(blob); video.load(); })
+          .catch(function () { video.src = srcUrl; video.load(); });
+        bootVideo();
+        return;
+      }
+      requestAnimationFrame(awaitFirstFrame);
+    }());
+  } else {
+    bootVideo();
+  }
 })();
