@@ -553,7 +553,19 @@
     var dt = lastNow ? Math.min(now - lastNow, 100) : 16.7;
     lastNow = now;
     frames++;
-    var k = 1 - Math.pow(1 - 0.14, dt / 16.7);
+
+    /* Lissage ADAPTATIF, en plus d'être indépendant de la cadence.
+       Une constante unique laisse ~120ms de retard. Au défilement rapide ce
+       retard ne se voit pas — il adoucit même le passage d'une image à la
+       suivante. Au défilement lent il se ressent comme du jeu mécanique : le
+       maillot ne répond pas tout de suite au doigt (remonté en QA : « fluide
+       si je scrolle vite, du mou si je scrolle doucement »).
+       On resserre donc quand l'écart restant est petit — le maillot colle au
+       geste — et on relâche quand il est grand, ce qui conserve exactement le
+       glissé actuel sur les grands mouvements. */
+    var gap = Math.abs(target - vSmooth);
+    var snap = 0.42 - 0.28 * Math.min(1, gap * 14);   // 0.42 tout près → 0.14 loin
+    var k = 1 - Math.pow(1 - snap, dt / 16.7);
 
     if (introActive) {
       if (introT0 < 0) introT0 = now;         // same clock as rAF
