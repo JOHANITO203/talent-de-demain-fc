@@ -50,7 +50,23 @@
   if (!coarse && !narrow) return;          // desktop : moteur <video> intact
 
   var COUNT = 193;
-  var DIR = 'assets/frames/';
+
+  /* JPEG et non WebP, à définition IDENTIQUE.
+     MESURÉ sur l'appareil du client (Galaxy S23+), sur les mêmes images en
+     900x1080, en chronométrant l'envoi au GPU qui porte le décodage :
+        WebP  9,8 ms      AVIF 13,1 ms      JPEG 5,0 ms
+     Le JPEG décode deux fois plus vite, et même plus vite qu'un WebP
+     rapetissé en 720 (5,8 ms). Le décodeur JPEG est optimisé de longue date
+     et le sous-échantillonnage de chrominance lui épargne la moitié du
+     travail sur la couleur — ce qui ne se voit pas ici, le maillot étant
+     noir et blanc.
+     Le coût dominant du héro était ce décodage : 10 ms dans un budget de
+     16,7. Changer de codec le divise par deux SANS toucher à la définition,
+     ce qui était l'objectif. Contrepartie : 13 Mo au lieu de 10.
+     Écart mesuré avec le WebP : 0,81 sur 255 en moyenne, invisible à
+     l'écran (vérifié à 2x de grossissement). */
+  var DIR = 'assets/frames-jpg/';
+  var EXT = '.jpg';
   var VER = '?v=1';                        // à incrémenter si on ré-encode
   var STRIDE = 4;                          // 1 image sur 4 dans la vague 1
 
@@ -73,7 +89,7 @@
     };
     // Une image manquante ne doit pas figer la file : on passe à la suivante.
     img.onerror = function () { if (then) then(); };
-    img.src = DIR + 'f_' + pad(i + 1) + '.webp' + VER;
+    img.src = DIR + 'f_' + pad(i + 1) + EXT + VER;
   }
 
   /* File d'attente à concurrence bornée. Sans borne, 193 requêtes partent
@@ -118,5 +134,12 @@
 
   window.tddFrameSource = SRC;
 
-  queue(wave1, 6, function () { queue(wave2, 6); });
+  /* La toute première image part SEULE, avant la file.
+     Avec six requêtes lancées de front, elle se retrouvait en concurrence
+     avec cinq autres : le maillot tardait à apparaître, et paraissait parfois
+     ne jamais venir. C'est elle qui déclenche l'affichage du héro, elle passe
+     donc en premier, sans rien pour lui disputer la bande passante. */
+  load(0, function () {
+    queue(wave1.slice(1), 6, function () { queue(wave2, 6); });
+  });
 }());
