@@ -502,8 +502,17 @@
     target = Math.min(1, Math.max(0, y / runway));
   }
 
+  /* Le défilement N'EST PAS lu depuis l'événement 'scroll'.
+     QA sur appareil réel (webview intégrée, écran 338x648) : la page défilait
+     visiblement — le maillot était sorti par le haut, la section suivante à
+     l'écran — et la sonde affichait toujours « defilement 0% / rotation
+     0deg ». L'événement ne parvenait pas au handler, donc la progression
+     restait à sa valeur d'origine et la rotation ne démarrait jamais.
+     La position est désormais relue à chaque image dans tick() : une lecture
+     de rectangle par frame, insensible à la façon dont le navigateur
+     distribue (ou non) ses événements. Le listener reste comme filet pour les
+     défilements qui n'arrivent pas via rAF (ancre, restauration de session). */
   window.addEventListener('scroll', function () {
-    // The first scroll always wins over the autoplay intro.
     if (introActive && window.pageYOffset > 2) introActive = false;
     readScroll();
   }, { passive: true });
@@ -526,6 +535,10 @@
 
   function tick(now) {
     var rise = 0; // jersey settle-in offset during the intro
+
+    // Source de vérité du défilement : mesurée ici, pas reçue par événement.
+    readScroll();
+    if (introActive && window.pageYOffset > 2) introActive = false;
 
     if (introActive) {
       if (introT0 < 0) introT0 = now;         // same clock as rAF
@@ -703,7 +716,11 @@
           ' / attendu ' + Math.round(window.innerWidth / 2) + '\n' +
         'haut ' + Math.round(c.top) + '  bas ' + Math.round(c.bottom) +
           '   rotation ' + Math.round(vSmooth * 360) + 'deg' +
-          '   defilement ' + Math.round(target * 100) + '%';
+          '   defilement ' + Math.round(target * 100) + '%\n' +
+        'scrollY ' + Math.round(window.pageYOffset) +
+          '  piste ' + Math.round(track.getBoundingClientRect().top) +
+          '..' + track.offsetHeight +
+          '  course ' + Math.round(track.offsetHeight - window.innerHeight);
     }, 300);
   }
 })();
