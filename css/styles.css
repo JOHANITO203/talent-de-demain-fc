@@ -295,7 +295,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-weight: 600;
   letter-spacing: .06em;
   text-transform: uppercase;
-  padding: 11px 4px;          /* ≥ 40px tall: tablets get the full menu too */
+  /* 44px de haut : mesuré à 35px. En rendu « en ligne » le rembourrage
+     vertical ne crée pas de boîte cliquable fiable. La barre ayant une
+     hauteur fixe, le supplément ne déplace rien. */
+  display: inline-block;
+  padding: 15px 4px;
   transition: opacity .2s ease;
 }
 .nav__menu a:hover { opacity: .55; }
@@ -314,6 +318,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .lang-btn {
   min-width: 44px;
   padding: 9px 10px;
+  position: relative;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   font-family: var(--font-display);
@@ -322,6 +327,18 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   letter-spacing: .12em;
   color: var(--ink);
   transition: border-color .2s ease, background .2s ease;
+}
+/* La zone cliquable atteint 44px SANS toucher à l'aspect du bouton : un
+   calque transparent l'étend au-delà de sa bordure. Grossir le rembourrage
+   fonctionnait aussi, mais rendait le bouton visiblement plus haut — et le
+   rendu validé ne devait pas bouger. */
+.lang-btn::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
 }
 .lang-btn:hover { border-color: var(--ink); background: var(--tint); }
 .nav-open .lang-btn { opacity: 0; pointer-events: none; }
@@ -1207,4 +1224,58 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
      Ce réglage ne supprime plus ici que le défilement fluide ; les
      transitions d'entrée sont neutralisées plus haut, et l'intro qui tourne
      toute seule l'est dans js/main.js. */
+}
+
+
+/* ==========================================================================
+   Écrans courts — le maillot reste le sujet
+   --------------------------------------------------------------------------
+   Le maillot est dimensionné avec la place qui RESTE entre la barre et le
+   bloc de texte. Le texte ayant une hauteur imposée par son contenu, c'est
+   lui qui était la constante et le maillot la variable : mesuré, le maillot
+   tombait à 155px sur 320x568 et à 25px sur 280x480 — il avait disparu.
+
+   On inverse le rapport : sous 640px de haut, c'est le texte qui cède.
+   Chaque palier lui retire un peu de corps, ce qui rend d'autant de place
+   au maillot. Rien au-dessus de 640px : le format de référence est intact.
+   ========================================================================== */
+
+@media (max-width: 900px) and (max-height: 640px) {
+  .hero-copy__title { font-size: 15.5px; line-height: 1.12; }
+  .hero-copy__text  { margin-top: 6px; font-size: 11.5px; line-height: 1.35; }
+  .hero-copy .btn   { margin-top: 10px; padding: 15px 17px; font-size: 11.5px; }
+  .hero-title__line { font-size: min(13vw, 9vh); }
+}
+
+@media (max-width: 900px) and (max-height: 570px) {
+  .hero-copy__title { font-size: 14px; }
+  /* La description passe à la trappe avant le titre et le bouton : c'est
+     l'élément dont l'absence coûte le moins à la compréhension. */
+  .hero-copy__text  { display: none; }
+  .hero-copy .btn   { margin-top: 10px; }
+  .hero-title__line { font-size: min(12vw, 8.5vh); }
+  .story__title     { font-size: 10.5px; }
+  .rotation-meter   { padding: 4px 10px; }
+  .rotation-meter__line { width: 110px; }
+}
+
+@media (max-width: 900px) and (max-height: 470px) {
+  /* Dernier retranchement : il ne reste que le nom, le maillot et le bouton. */
+  .hero-copy__title { font-size: 12.5px; }
+  .hero-title__line { font-size: min(11vw, 8vh); }
+  .story__item      { display: none; }
+}
+
+/* ==========================================================================
+   Replis pour navigateurs sans flou d'arrière-plan
+   --------------------------------------------------------------------------
+   backdrop-filter est utilisé sur les panneaux translucides du héro et du
+   menu. Sans lui, ces panneaux restent semi-transparents SANS flou : le
+   texte se lit par-dessus le maillot ou le grand titre. On les rend opaques
+   dans ce cas — moins joli, toujours lisible.
+   ========================================================================== */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .story__item    { background: var(--bg); }
+  .rotation-meter { background: var(--bg); }
+  .nav-panel      { background: var(--bg); }
 }

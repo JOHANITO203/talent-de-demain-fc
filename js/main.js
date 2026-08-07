@@ -198,9 +198,22 @@
     sticky.style.setProperty('--meter-touch', (restFromBottom + 4) + 'px');
   }
 
-  function syncHeroLayout() {
+  /* Sur mobile, les barres du navigateur se rétractent au défilement et la
+     hauteur de fenêtre change de ~90px. Comme la mise en page du héro est
+     mesurée, elle se recalculait en pleine course : mesuré sur l'écran du
+     client, le maillot sautait de 193 à 278px — 85px, 9 points de %, pendant
+     qu'il faisait défiler.
+     On ignore donc les variations de hauteur inférieures à ce seuil. Une
+     rotation d'écran ou un vrai redimensionnement changent la largeur, ou
+     dépassent le seuil : ceux-là recalculent. */
+  var dernierH = 0, dernierW = 0;
+
+  function syncHeroLayout(force) {
     if (!sticky) return;
     var vh = window.innerHeight;
+    if (!force && dernierW === window.innerWidth
+        && Math.abs(vh - dernierH) < 130 && dernierH) return;
+    dernierH = vh; dernierW = window.innerWidth;
 
     // clear any value we set before measuring, or we would measure our own
     // correction and oscillate on every resize
@@ -262,9 +275,11 @@
 
   window.addEventListener('resize', syncHeroLayout);
   // fonts change the copy block's height, so re-measure once they land
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeroLayout);
-  setTimeout(syncHeroLayout, 0);
-  setTimeout(syncHeroLayout, 1300);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { syncHeroLayout(true); });
+  }
+  setTimeout(function () { syncHeroLayout(true); }, 0);
+  setTimeout(function () { syncHeroLayout(true); }, 1300);
 
   /* The copy block settles late and unpredictably: webfonts swap in, the text
      re-wraps, the language toggle rewrites it. Measuring only at fixed
@@ -272,7 +287,9 @@
      and not on others, leaving the meter sitting on the text. Watching the
      block instead removes the timing question entirely. */
   if (window.ResizeObserver && copyEl) {
-    new ResizeObserver(syncHeroLayout).observe(copyEl);
+    // le bloc de texte a changé de taille : recalcul forcé, l'hystérésis
+    // ne concerne que les variations de hauteur de FENÊTRE
+    new ResizeObserver(function () { syncHeroLayout(true); }).observe(copyEl);
   }
 
   /* Debug hook: ?scrub=0.5 freezes the scrub at a fixed progress
