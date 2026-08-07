@@ -610,17 +610,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   pointer-events: none;
 }
 .story__item--right::before { left: auto; right: 100%; margin: 0 10px 0 0; }
-.story__item::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--red);
-  border-radius: inherit;
-  transform: scaleX(var(--v, 0));
-  transform-origin: left center;
-  pointer-events: none;
-}
-.story__item--right::after { transform-origin: right center; }
 .story__item > * { position: relative; z-index: 1; }
 
 .story__item {

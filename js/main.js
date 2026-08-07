@@ -745,18 +745,8 @@
       var shift = (1 - a) * 18 * (s.right ? 1 : -1);
       s.el.style.opacity = a.toFixed(3);
       s.el.style.transform = 'translateX(' + shift.toFixed(1) + 'px)';
-      /* Le volet est un BALAYAGE, et seulement À L'ENTRÉE.
-         Étalé sur toute la fenêtre il recouvrait le bloc entier à la sortie
-         — et à demi-opacité, en même temps que la traînée de fin de héro,
-         cela se lisait comme une erreur d'affichage. À la sortie le repère
-         se contente de repartir du côté d'où il est venu. */
-      var entree = (smooth - s.from) / FADE;
-      var v = 0;
-      if (entree >= 0 && entree <= 1) {
-        v = entree < 0.28 ? entree / 0.28 : Math.max(0, 1 - (entree - 0.28) / 0.26);
-      }
+      // --t pilote la longueur du trait de repère (styles.css).
       s.el.style.setProperty('--t', a.toFixed(3));
-      s.el.style.setProperty('--v', v.toFixed(3));
     });
 
     // Rotation meter follows the VIDEO, so the intro spin reads live too.
