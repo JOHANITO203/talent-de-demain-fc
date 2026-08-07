@@ -176,6 +176,11 @@
       if (!piste) { renoncer('aucune piste video'); return; }
       SRC.width = piste.video.width;
       SRC.height = piste.video.height;
+      /* Le nombre d'images est connu dès l'en-tête : on n'attend pas la fin
+         du téléchargement pour savoir où l'on va. */
+      COUNT = piste.nb_samples || 0;
+      SRC.count = COUNT;
+      samples = recus;                     // même tableau, rempli au fil de l'eau
 
       var desc = description(fichier, piste);
       if (!desc) { renoncer('description du codec introuvable'); return; }
@@ -225,7 +230,13 @@
     };
 
     fichier.onSamples = function (id, user, lot) {
+      var premier = recus.length === 0;
       for (var i = 0; i < lot.length; i++) recus.push(lot[i]);
+      /* On décode dès le premier lot. Attendre la fin du téléchargement
+         faisait expirer le filet de sécurité avant la moindre image —
+         constaté sur l'appareil du client, où les 8 Mo mettent plus de six
+         secondes à arriver. */
+      if (premier) demander(0);
     };
 
     /* Lecture PROGRESSIVE du conteneur.
@@ -240,9 +251,7 @@
       try { fichier.flush(); } catch (e) {}
       if (!recus.length) { renoncer('aucun echantillon extrait'); return; }
       samples = recus;
-      COUNT = recus.length;
-      SRC.count = COUNT;
-      demander(0);
+      if (recus.length !== COUNT) { COUNT = recus.length; SRC.count = COUNT; }
     }
 
     fetch(URL_MP4).then(function (r) {
@@ -277,5 +286,12 @@
   demarrer();
 
   /* Filet : si rien n'est décodé au bout de six secondes, on rend la main. */
-  setTimeout(function () { if (!SRC.ready) renoncer('aucune image en 6 s'); }, 6000);
+  setTimeout(function () {
+    /* On ne renonce que si RIEN n'est arrivé : ni échantillon, ni décodeur.
+       Sanctionner la simple lenteur d'une connexion ferait basculer sur les
+       13 Mo de JPEG alors que la vidéo, plus légère, était en bonne voie. */
+    if (!SRC.ready && !recusGlobal()) renoncer('rien recu en 12 s');
+  }, 12000);
+
+  function recusGlobal() { return !!(samples && samples.length); }
 }());
