@@ -37,7 +37,7 @@
     try { var _t = localStorage.getItem('tdd-theme');
           if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
   <!-- ?v= : cache-busting — bump on every CSS/JS change -->
-  <link rel="stylesheet" href="css/styles.css?v=40">
+  <link rel="stylesheet" href="css/styles.css?v=41">
   <!-- Preload the scrub video so the hero is ready before the user scrolls -->
   <!-- Seuil aligné sur l'aiguillage de js/hero-sequence.js : au-dessous de
        1025px le héro utilise la séquence d'images, précharger la vidéo y
@@ -170,10 +170,6 @@
         <span class="rotation-meter__deg" id="rotation-deg">0°</span>
       </div>
 
-      <!-- La coupure : une traînée qui part du curseur de la jauge et
-           emmène vers la section suivante. Pilotée par js/main.js. -->
-      <div class="hero-cut" id="hero-cut" aria-hidden="true"></div>
-
       <!-- Bottom-right media card (phone-style frame) -->
       <aside class="media-card" aria-label="Dans le club">
         <div class="media-card__screen">
@@ -209,6 +205,6 @@
   <script src="js/nav.js?v=2"></script>
   <!-- Doit précéder main.js : publie la source d'images que le moteur lit. -->
   <script src="js/hero-sequence.js?v=1"></script>
-  <script src="js/main.js?v=46"></script>
+  <script src="js/main.js?v=47"></script>
 </body>
 </html>

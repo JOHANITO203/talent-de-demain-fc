@@ -44,7 +44,6 @@
   var rotLabel = document.getElementById('rotation-label');
   var rotLine  = document.getElementById('rotation-line');
   var rotDeg   = document.getElementById('rotation-deg');
-  var cutEl    = document.getElementById('hero-cut');
   var heroTitle = document.querySelector('.hero-title');
 
   /* ---- Kinetic headline entrance -----------------------------------------
@@ -773,38 +772,6 @@
     if (rotLabel) {
       rotLabel.style.opacity = vSmooth < 0.02 ? '1' : '.45';
       rotLabel.textContent = vSmooth < 0.02 ? T.scroll : T.rotation;
-    }
-
-    /* La coupure de fin de héro : une traînée qui part du curseur de la
-       jauge, dont on prend la position réelle à l'écran. Deux temps
-       séparés — la traînée file d'abord seule à l'horizontale, puis
-       l'ouverture en hauteur suit. Sans cette séparation, on ne lit qu'un
-       rideau. Brève : les sept derniers centièmes du parcours. */
-    if (cutEl) {
-      var ct = smooth > 0.93 ? Math.min(1, (smooth - 0.93) / 0.07) : 0;
-      if (ct <= 0) {
-        cutEl.style.clipPath = 'inset(100% 100% 0 0)';
-      } else {
-        var lineEl = rotLine && rotLine.parentNode;
-        var cx = 50, cy = 92;
-        if (lineEl) {
-          var lr = lineEl.getBoundingClientRect();
-          if (lr.width) {
-            cx = ((lr.left + vSmooth * lr.width) / window.innerWidth) * 100;
-            cy = ((lr.top + lr.height / 2) / window.innerHeight) * 100;
-          }
-        }
-        var fil = Math.min(1, ct / 0.5);
-        var ouv = ct > 0.5 ? (ct - 0.5) / 0.5 : 0;
-        var ez = function (x) { return 1 - Math.pow(1 - x, 3); };
-        var ea = ez(fil);
-        var eb = Math.max(0.014, ez(ouv));   // plancher : la traînée reste visible
-        cutEl.style.clipPath = 'inset(' +
-          Math.max(0, cy - eb * cy).toFixed(2) + '% ' +
-          Math.max(0, (100 - cx) - ea * (100 - cx)).toFixed(2) + '% ' +
-          Math.max(0, (100 - cy) - eb * (100 - cy)).toFixed(2) + '% ' +
-          Math.max(0, cx - ea * cx).toFixed(2) + '%)';
-      }
     }
 
     requestAnimationFrame(tick);
