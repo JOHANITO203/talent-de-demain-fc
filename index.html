@@ -42,7 +42,10 @@
   <!-- Seuil aligné sur l'aiguillage de js/hero-sequence.js : au-dessous de
        1025px le héro utilise la séquence d'images, précharger la vidéo y
        ferait télécharger 8 Mo pour rien (une tablette les payait). -->
-  <link rel="preload" as="video" href="assets/video/jersey-scrub.mp4" type="video/mp4" media="(min-width: 1025px)">
+  <link rel="preload" as="video" href="assets/video/jersey-scrub.mp4" type="video/mp4"
+        media="(min-width: 1025px) and (max-resolution: 1.49dppx)">
+  <link rel="preload" as="video" href="assets/video/jersey-scrub-1350.mp4" type="video/mp4"
+        media="(min-width: 1025px) and (min-resolution: 1.5dppx)">
 
   <!-- Structured data: lets search engines show the club as an entity
        (name, logo, socials) rather than a plain blue link.
@@ -202,6 +205,6 @@
   <script src="js/nav.js?v=2"></script>
   <!-- Doit précéder main.js : publie la source d'images que le moteur lit. -->
   <script src="js/hero-sequence.js?v=1"></script>
-  <script src="js/main.js?v=35"></script>
+  <script src="js/main.js?v=36"></script>
 </body>
 </html>

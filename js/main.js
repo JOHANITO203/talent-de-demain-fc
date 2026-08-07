@@ -244,9 +244,20 @@
 
   /* ---- Source selection: light encode for small screens ---------------- */
   var isSmall = window.matchMedia('(max-width: 767px)').matches;
+
+  /* Écran haute densité : la version 900x1080 ne suffit plus.
+     Mesuré — sur un portable Retina le canvas demande 990x1188, sur un
+     desktop 4K mis à l'échelle 1188x1426. Le maillot y était donc AGRANDI
+     au-delà de sa définition source (x0,91 et x0,76), c'est-à-dire flou.
+     La source d'origine fait 2488x3332 : la matière existait, elle n'était
+     pas servie. La version 1350x1620 reprend exactement la même géométrie
+     (mise à l'échelle puis marges centrées, vérifié image par image) et
+     n'est servie qu'aux écrans qui en profitent — 15 Mo au lieu de 8. */
+  var hiDpi = (window.devicePixelRatio || 1) >= 1.5;
   var srcUrl = (isSmall
     ? 'assets/video/jersey-scrub-540.mp4'
-    : 'assets/video/jersey-scrub.mp4') + '?v=7'; // bump on video re-encode
+    : (hiDpi ? 'assets/video/jersey-scrub-1350.mp4'
+             : 'assets/video/jersey-scrub.mp4')) + '?v=8';
   var srcFps = 24;
 
   /* Fully prefetch the clip into a Blob before wiring it to the <video>.
