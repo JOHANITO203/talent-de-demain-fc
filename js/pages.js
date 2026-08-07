@@ -144,7 +144,7 @@
 
       var endpoint = (joinForm.dataset.endpoint || '').trim();
       var data = new FormData(joinForm);
-      if (data.get('company')) return;            // honeypot tripped: silent no-op
+      if (data.get('_gotcha')) return;            // honeypot tripped: silent no-op
 
       submit.disabled = true;
       status.className = 'join__status';
