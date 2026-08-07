@@ -172,7 +172,19 @@
        sous le vêtement — la boîte du maillot a une large marge transparente
        en bas, le compteur y passe sans toucher au tissu. */
     var copyY = sTop + copyEl.offsetTop;      // haut du bloc de texte
-    var restFromBottom = vh - copyY;
+
+    /* ATTENTION AUX ESPACES DE COORDONNÉES.
+       --jersey-bottom, --meter-touch et --story-bottom sont des `bottom` CSS
+       sur des éléments positionnés dans .hero-sticky : ils vivent dans
+       l'espace du HÉRO, pas dans celui de la fenêtre.
+       Je calculais avec window.innerHeight. Sur Android les deux coïncident
+       (le héro fait 100dvh), le défaut était donc invisible. Sur iPhone,
+       Safari fait diverger innerHeight de la hauteur réelle du héro : tout le
+       bloc maillot + compteur remontait d'autant, ouvrant ~125px de vide
+       au-dessus du texte. Constaté à l'enregistrement d'écran.
+       On reste donc entièrement dans l'espace du héro. */
+    var hHero = sticky.getBoundingClientRect().height || vh;
+    var restFromBottom = hHero - copyEl.offsetTop;
 
     /* La proportion visée s'applique telle quelle quand la place existe.
        En français le bloc de texte fait deux lignes de plus qu'en anglais —
@@ -186,7 +198,8 @@
        maillot de 35px pour rien. */
     var MARGE_HAUT = 0.116;
     var libre = (copyY - 10 - (navH0() + 6)) / (GROW * (1 - MARGE_HAUT));
-    var h = Math.min(vh * 0.395, libre);
+    /* La proportion se prend sur la hauteur du HÉRO, pour la même raison. */
+    var h = Math.min(hHero * 0.395, libre);
     sticky.style.setProperty('--jersey-h', h + 'px');
     /* Légende : juste au-dessus du compteur, dans la bande libre sous
        l'ourlet du maillot. C'est le seul endroit de l'écran qui ne masque ni
