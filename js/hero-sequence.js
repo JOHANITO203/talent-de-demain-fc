@@ -59,26 +59,71 @@
   var chaud = new Array(COUNT);   // image déjà décodée d'avance
   var loadedCount = 0;
 
-  /* Préchauffage du décodage.
-     Les images sont des <img> et non des ImageBitmap, volontairement : le
-     navigateur peut alors libérer leur forme décodée sous pression mémoire,
-     ce qui évite de faire tomber le téléphone (193 images de 900x1080
-     épinglées feraient 750 Mo). La contrepartie est qu'il lui arrive de
-     redécoder AU MOMENT du dessin, et ce décodage synchrone coûte une image.
-     Mesuré sur Galaxy S23+ dans Samsung Internet : médiane à 59,9 im/s mais
-     un 90e centile à 30 — une image sur dix doublait, d'où un battement
-     perçu comme un manque de fluidité.
-     On demande donc le décodage à l'avance pour les images qui arrivent.
-     decode() rend la main immédiatement si l'image est déjà prête. */
-  function prechauffer(centre) {
-    for (var d = -2; d <= 7; d++) {
-      var i = centre + d;
-      if (i < 0 || i >= COUNT || chaud[i] || !done[i]) continue;
-      chaud[i] = true;
-      if (imgs[i].decode) {
-        imgs[i].decode().catch(function () { /* sans importance */ });
-      }
+  /* ---- Images prêtes pour le GPU, en fenêtre glissante ------------------
+     MESURÉ sur l'appareil du client (Galaxy S23+, Chrome et Samsung
+     Internet), en chronométrant les appels dans la page :
+        envoi d'une <img> au GPU : 13,9 ms de médiane, 18,7 au 90e centile
+        rendu du shader          :  0,0 ms
+     L'envoi consommait donc 14 ms sur les 16,7 d'un cycle d'écran — 47% des
+     images arrivaient en retard pendant la rotation. Ce n'était ni le GPU
+     (Adreno 740) ni le nombre d'images.
+
+     La raison : donner une <img> à texImage2D oblige le navigateur à la
+     décoder puis à la convertir à chaque envoi. Un ImageBitmap est déjà
+     décodé et dans le bon format — l'envoi devient une copie.
+
+     Le piège serait de tout convertir : 193 images de 900x1080 en mémoire
+     décodée font 750 Mo et feraient tomber le téléphone. On garde donc une
+     FENÊTRE glissante autour de l'image courante, et on libère le reste
+     explicitement. La fenêtre suit le sens du défilement. */
+  var bmp = new Array(COUNT);       // ImageBitmap prêts
+  var enCours = new Array(COUNT);   // conversions en vol
+  var recents = [];                 // ordre d'utilisation, pour libérer
+  var FENETRE = 26;                 // ~100 Mo au plus, largement tenable
+  var sensPrec = 1, dernierIdx = 0;
+
+  function libererVieux() {
+    while (recents.length > FENETRE) {
+      var v = recents.shift();
+      if (bmp[v] && bmp[v].close) bmp[v].close();
+      bmp[v] = null;
     }
+  }
+
+  function preparer(i) {
+    if (i < 0 || i >= COUNT || !done[i] || bmp[i] || enCours[i]) return;
+    if (!window.createImageBitmap) {         // repli : on garde la <img>
+      if (!chaud[i] && imgs[i].decode) {
+        chaud[i] = true;
+        imgs[i].decode().catch(function () {});
+      }
+      return;
+    }
+    enCours[i] = true;
+    /* Aucune conversion d'espace de couleur ni de prémultiplication : le
+       shader travaille sur les valeurs brutes, et chaque conversion coûte
+       le temps qu'on essaie justement d'économiser. */
+    window.createImageBitmap(imgs[i], {
+      premultiplyAlpha: 'none',
+      colorSpaceConversion: 'none'
+    }).then(function (b) {
+      enCours[i] = false;
+      if (bmp[i]) { b.close && b.close(); return; }
+      bmp[i] = b;
+      recents.push(i);
+      libererVieux();
+    }).catch(function () { enCours[i] = false; });
+  }
+
+  function prechauffer(centre) {
+    if (centre !== dernierIdx) {
+      sensPrec = centre > dernierIdx ? 1 : -1;
+      dernierIdx = centre;
+    }
+    // devant dans le sens du défilement, un peu derrière pour les retours
+    for (var d = -3; d <= 10; d++) preparer(centre + d * sensPrec);
+    var k = recents.indexOf(centre);
+    if (k >= 0) { recents.splice(k, 1); recents.push(centre); }  // garder le courant
   }
 
   function pad(n) { return n < 100 ? (n < 10 ? '00' + n : '0' + n) : '' + n; }
@@ -131,6 +176,7 @@
       if (!(p >= 0)) p = 0; else if (p > 1) p = 1;
       var want = Math.round(p * (COUNT - 1));
       prechauffer(want);
+      if (bmp[want]) return bmp[want];
       if (done[want]) return imgs[want];
       for (var d = 1; d < COUNT; d++) {
         if (want - d >= 0 && done[want - d]) return imgs[want - d];

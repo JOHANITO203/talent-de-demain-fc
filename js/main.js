@@ -461,6 +461,11 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
+    /* Ni conversion d'espace de couleur, ni retournement : chacune coûte du
+       temps à l'envoi, et le shader travaille sur les valeurs brutes. */
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+
     gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
     glTexelLoc = gl.getUniformLocation(prog, 'uTexel');
     gl.uniform2f(glTexelLoc, 1 / 900, 1 / 1080); // updated once metadata loads
