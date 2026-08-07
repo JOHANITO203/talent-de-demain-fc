@@ -50,59 +50,54 @@
   if (!coarse && !narrow) return;          // desktop : moteur <video> intact
 
   var COUNT = 193;
-
-  /* Deux définitions, choisies selon ce que le canvas affiche RÉELLEMENT.
-     MESURÉ sur l'appareil du client : le coût dominant n'est ni le GPU ni
-     l'envoi, c'est le DÉCODAGE WebP — 10 ms par image en 900x1080, contre
-     0,4 ms pour envoyer une image déjà décodée. Ce coût est proportionnel au
-     nombre de pixels.
-     Or son canvas n'affiche que 679 px de large : décoder du 900 pour en
-     montrer 679 était du travail perdu. Le jeu 720x864 fait 64% des pixels,
-     donc environ 6 ms au lieu de 10, et ne perd rien à l'écran tant que le
-     canvas reste sous 720.
-     Les écrans qui en demandent davantage — un iPhone à densité 3 réclame
-     833 px — reçoivent toujours le jeu complet. */
-  var besoin = (function () {
-    var cv = document.getElementById('jersey-canvas');
-    var l = cv ? cv.offsetWidth : 0;
-    if (!l) {                                // avant la mise en page
-      l = Math.min(window.innerWidth * 0.62, window.innerHeight * 0.42 * 0.833);
-    }
-    return l * (window.devicePixelRatio || 1);
-  }());
-  var PETIT = besoin <= 720;
-  var DIR = PETIT ? 'assets/frames720/' : 'assets/frames/';
-  var LARGE = PETIT ? 720 : 900, HAUT = PETIT ? 864 : 1080;
+  var DIR = 'assets/frames/';
   var VER = '?v=1';                        // à incrémenter si on ré-encode
   var STRIDE = 4;                          // 1 image sur 4 dans la vague 1
 
   var imgs = new Array(COUNT);
   var done = new Array(COUNT);
-  var chaud = new Array(COUNT);   // image déjà décodée d'avance
   var loadedCount = 0;
 
-  /* Pas de préparation d'avance en ImageBitmap.
-     Essayé et MESURÉ sur l'appareil : createImageBitmap bloque le fil
-     principal 9,9 ms en médiane, 15,5 au 90e centile — davantage que ce
-     qu'il fait économiser à l'envoi, et il est appelé plus souvent que le
-     dessin (248 préparations pour 150 envois). Net négatif.
-     La bonne réponse était en amont : décoder moins de pixels. Voir le choix
-     de définition plus haut. On demande simplement au navigateur de décoder
-     les images qui arrivent, ce qui ne bloque pas. */
-  function prechauffer(centre) {
-    for (var d = -2; d <= 8; d++) {
-      var i = centre + d;
-      if (i < 0 || i >= COUNT || chaud[i] || !done[i]) continue;
-      chaud[i] = true;
-      if (imgs[i].decode) imgs[i].decode().catch(function () {});
-    }
+  function pad(n) { return n < 100 ? (n < 10 ? '00' + n : '0' + n) : '' + n; }
+
+  function load(i, then) {
+    if (imgs[i]) { if (then) then(); return; }
+    var img = new Image();
+    img.decoding = 'async';
+    imgs[i] = img;
+    img.onload = function () {
+      done[i] = true;
+      loadedCount++;
+      if (!SRC.ready) SRC.ready = true;    // main.js démarre sur ce signal
+      if (then) then();
+    };
+    // Une image manquante ne doit pas figer la file : on passe à la suivante.
+    img.onerror = function () { if (then) then(); };
+    img.src = DIR + 'f_' + pad(i + 1) + '.webp' + VER;
   }
+
+  /* File d'attente à concurrence bornée. Sans borne, 193 requêtes partent
+     ensemble et la première image arrive aussi tard que la dernière. */
+  function queue(list, lanes, whenDone) {
+    var next = 0, active = 0;
+    function pump() {
+      while (active < lanes && next < list.length) {
+        active++;
+        load(list[next++], function () { active--; pump(); });
+      }
+      if (!active && next >= list.length && whenDone) { whenDone(); whenDone = null; }
+    }
+    pump();
+  }
+
+  var wave1 = [], wave2 = [], i;
+  for (i = 0; i < COUNT; i++) (i % STRIDE ? wave2 : wave1).push(i);
 
   /* ---- Contrat exposé à main.js ------------------------------------------ */
   var SRC = {
     ready: false,
-    width: LARGE,
-    height: HAUT,
+    width: 900,
+    height: 1080,
     count: COUNT,
     progress: function () { return loadedCount / COUNT; },
 
@@ -112,7 +107,6 @@
     frameAt: function (p) {
       if (!(p >= 0)) p = 0; else if (p > 1) p = 1;
       var want = Math.round(p * (COUNT - 1));
-      prechauffer(want);
       if (done[want]) return imgs[want];
       for (var d = 1; d < COUNT; d++) {
         if (want - d >= 0 && done[want - d]) return imgs[want - d];

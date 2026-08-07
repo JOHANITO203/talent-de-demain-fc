@@ -461,11 +461,6 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-    /* Ni conversion d'espace de couleur, ni retournement : chacune coûte du
-       temps à l'envoi, et le shader travaille sur les valeurs brutes. */
-    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-
     gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
     glTexelLoc = gl.getUniformLocation(prog, 'uTexel');
     gl.uniform2f(glTexelLoc, 1 / 900, 1 / 1080); // updated once metadata loads
@@ -489,13 +484,7 @@
 
   /* ---- Canvas sizing (device-pixel-ratio aware, no blur) ---------------- */
   function resizeCanvas() {
-    /* Géométrie de MISE EN PAGE, pas le rectangle affiché : celui-ci inclut
-       l'agrandissement de 20% que le défilement applique au maillot. Un
-       redimensionnement survenu à ce moment-là allouait un tampon 1,75 fois
-       plus grand — mesuré 900x1080 au lieu de 680x816 sur l'appareil du
-       client. Même piège que pour le compteur, plus haut. */
-    var rect = { width: canvas.offsetWidth, height: canvas.offsetHeight };
-    if (!rect.width) rect = canvas.getBoundingClientRect();
+    var rect = canvas.getBoundingClientRect();
     var dpr  = Math.min(window.devicePixelRatio || 1, 2); // cap DPR: perf
     var w = Math.round(rect.width  * dpr);
     var h = Math.round(rect.height * dpr);
