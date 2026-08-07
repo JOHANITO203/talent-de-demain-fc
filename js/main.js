@@ -525,6 +525,9 @@
      spin ends. The turn is seamless (last frame ≈ first frame), so landing
      back on 0 is invisible. Any scroll cancels it, and the rotation then
      sweeps smoothly to the scroll position instead of jumping. */
+  var lastNow = 0;   // horloge du lissage (voir tick)
+  var frames = 0;    // compteur d'images, lu par la sonde ?diag=1
+
   var INTRO_SPIN_MS = 4200;
   var INTRO_RISE_MS = 900;
   var introActive = false;
@@ -540,6 +543,18 @@
     readScroll();
     if (introActive && window.pageYOffset > 2) introActive = false;
 
+    /* Lissage indépendant de la cadence d'affichage.
+       Le facteur 0.14 était appliqué PAR IMAGE : à 60 im/s la rotation
+       rattrape le défilement en ~120ms, mais un téléphone en économie de
+       batterie tourne à 30 im/s ou moins, et la même constante y met deux à
+       trois fois plus de temps — c'est la lenteur remontée en QA. Converti en
+       constante de temps, le ressenti est le même à 30, 60 ou 120 im/s, et le
+       desktop (déjà à 60) ne change pas d'un poil. */
+    var dt = lastNow ? Math.min(now - lastNow, 100) : 16.7;
+    lastNow = now;
+    frames++;
+    var k = 1 - Math.pow(1 - 0.14, dt / 16.7);
+
     if (introActive) {
       if (introT0 < 0) introT0 = now;         // same clock as rAF
       var p = Math.min(1, (now - introT0) / INTRO_SPIN_MS);
@@ -549,11 +564,11 @@
       rise = 26 * Math.pow(1 - r, 3);
       if (p >= 1) { introActive = false; vSmooth = 0; } // seamless loop point
     } else {
-      vSmooth += (target - vSmooth) * 0.14;
+      vSmooth += (target - vSmooth) * k;
     }
 
     // Layout effects always follow the scroll — never the intro.
-    smooth += (target - smooth) * 0.14;
+    smooth += (target - smooth) * k;
     if (hasOverride) { smooth = target; vSmooth = target; } // QA: exact frame
 
     if (frameSrc) {
@@ -710,7 +725,11 @@
       'margin:0;padding:7px;font:11px/1.4 monospace;white-space:pre-wrap;' +
       'background:rgba(0,0,0,.85);color:#3f6;pointer-events:none';
     document.body.appendChild(probe);
+    var pFrames = 0, pTime = 0;
     setInterval(function () {
+      var t = Date.now();
+      var fps = pTime ? Math.round((frames - pFrames) * 1000 / (t - pTime)) : 0;
+      pFrames = frames; pTime = t;
       var b = jersey.getBoundingClientRect();
       var c = canvas.getBoundingClientRect();
       probe.textContent =
@@ -728,7 +747,8 @@
         'scrollY ' + Math.round(window.pageYOffset) +
           '  piste ' + Math.round(track.getBoundingClientRect().top) +
           '..' + track.offsetHeight +
-          '  course ' + Math.round(track.offsetHeight - window.innerHeight);
+          '  course ' + Math.round(track.offsetHeight - window.innerHeight) +
+          '   ' + fps + ' im/s';
     }, 300);
   }
 })();
