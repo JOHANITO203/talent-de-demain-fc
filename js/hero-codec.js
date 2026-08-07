@@ -228,19 +228,46 @@
       for (var i = 0; i < lot.length; i++) recus.push(lot[i]);
     };
 
-    fetch(URL_MP4)
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
-      .then(function (buf) {
-        buf.fileStart = 0;
-        fichier.appendBuffer(buf);
-        fichier.flush();
-        if (!recus.length) { renoncer('aucun echantillon extrait'); return; }
-        samples = recus;
-        COUNT = recus.length;
-        SRC.count = COUNT;
-        demander(0);                        // la première image, tout de suite
-      })
-      .catch(function (e) { renoncer('telechargement : ' + e); });
+    /* Lecture PROGRESSIVE du conteneur.
+       Charger les 8 Mo en un bloc échouait sur l'appareil du client
+       (« Failed to fetch ») : une allocation unique de cette taille est
+       fragile sur mobile. En flux, chaque morceau est remis à mp4box dès son
+       arrivée — l'en-tête suffit à configurer le décodeur, et les premières
+       images sont décodables bien avant la fin du téléchargement. */
+    var offset = 0;
+
+    function terminer() {
+      try { fichier.flush(); } catch (e) {}
+      if (!recus.length) { renoncer('aucun echantillon extrait'); return; }
+      samples = recus;
+      COUNT = recus.length;
+      SRC.count = COUNT;
+      demander(0);
+    }
+
+    fetch(URL_MP4).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.body || !r.body.getReader) {          // navigateur sans flux
+        return r.arrayBuffer().then(function (buf) {
+          buf.fileStart = 0;
+          fichier.appendBuffer(buf);
+          terminer();
+        });
+      }
+      var lecteur = r.body.getReader();
+      function suite() {
+        return lecteur.read().then(function (bloc) {
+          if (bloc.done) { terminer(); return; }
+          var buf = bloc.value.buffer.slice(bloc.value.byteOffset,
+                                            bloc.value.byteOffset + bloc.value.byteLength);
+          buf.fileStart = offset;
+          offset += buf.byteLength;
+          fichier.appendBuffer(buf);
+          return suite();
+        });
+      }
+      return suite();
+    }).catch(function (e) { renoncer('telechargement : ' + e); });
   }
 
   /* Le créneau est réservé avant même le chargement : la séquence JPEG voit
