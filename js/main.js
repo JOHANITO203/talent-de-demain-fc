@@ -489,7 +489,13 @@
 
   /* ---- Canvas sizing (device-pixel-ratio aware, no blur) ---------------- */
   function resizeCanvas() {
-    var rect = canvas.getBoundingClientRect();
+    /* Géométrie de MISE EN PAGE, pas le rectangle affiché : celui-ci inclut
+       l'agrandissement de 20% que le défilement applique au maillot. Un
+       redimensionnement survenu à ce moment-là allouait un tampon 1,75 fois
+       plus grand — mesuré 900x1080 au lieu de 680x816 sur l'appareil du
+       client. Même piège que pour le compteur, plus haut. */
+    var rect = { width: canvas.offsetWidth, height: canvas.offsetHeight };
+    if (!rect.width) rect = canvas.getBoundingClientRect();
     var dpr  = Math.min(window.devicePixelRatio || 1, 2); // cap DPR: perf
     var w = Math.round(rect.width  * dpr);
     var h = Math.round(rect.height * dpr);

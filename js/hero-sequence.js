@@ -120,8 +120,23 @@
       sensPrec = centre > dernierIdx ? 1 : -1;
       dernierIdx = centre;
     }
-    // devant dans le sens du défilement, un peu derrière pour les retours
-    for (var d = -3; d <= 10; d++) preparer(centre + d * sensPrec);
+    /* AU PLUS DEUX conversions par image de rendu. Sans ce frein, une
+       glissade rapide en lançait une dizaine d'un coup et le gain obtenu sur
+       l'envoi au GPU était repris par la préparation. Le coût est ainsi
+       étalé au lieu d'arriver en rafale. */
+    var budget = 2;
+    for (var d = 0; d <= 10 && budget > 0; d++) {
+      var av = centre + d * sensPrec;
+      if (av >= 0 && av < COUNT && done[av] && !bmp[av] && !enCours[av]) {
+        preparer(av); budget--;
+      }
+    }
+    for (var e = 1; e <= 3 && budget > 0; e++) {
+      var ar = centre - e * sensPrec;
+      if (ar >= 0 && ar < COUNT && done[ar] && !bmp[ar] && !enCours[ar]) {
+        preparer(ar); budget--;
+      }
+    }
     var k = recents.indexOf(centre);
     if (k >= 0) { recents.splice(k, 1); recents.push(centre); }  // garder le courant
   }
