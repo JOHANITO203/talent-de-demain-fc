@@ -24,6 +24,8 @@
   <meta name="twitter:description" content="Talent de Demain FC — the academy forging the football leaders of tomorrow.">
   <meta name="twitter:image" content="https://talentdedemainfc.com/assets/img/home-card.webp">
   <meta name="theme-color" content="#F0EFED">
+  <!-- Lu avant le CSS : coupe l'assombrissement automatique des navigateurs -->
+  <meta name="color-scheme" content="light">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="assets/img/logo-crest.png">
   <!-- Fonts are self-hosted (see css/styles.css @font-face) — no CDN request -->
@@ -31,7 +33,7 @@
        at their start position without ever hiding them for no-JS users. -->
   <script>document.documentElement.classList.add('js-anim');</script>
   <!-- ?v= : cache-busting — bump on every CSS/JS change -->
-  <link rel="stylesheet" href="css/styles.css?v=29">
+  <link rel="stylesheet" href="css/styles.css?v=30">
   <!-- Preload the scrub video so the hero is ready before the user scrolls -->
   <!-- Seuil aligné sur l'aiguillage de js/hero-sequence.js : au-dessous de
        1025px le héro utilise la séquence d'images, précharger la vidéo y
@@ -179,12 +181,19 @@
     <p class="outro__text">De la première séance au premier contrat professionnel — un club, un parcours, un maillot.</p>
     <a class="btn btn--light" href="academy.html">Découvrir l'académie</a>
     <footer class="outro__footer">
-      <span class="outro__sponsor">Sponsor officiel — <strong>Global Impact Côte d'Ivoire</strong></span>
+      <!-- Libellé et nom sont deux blocs distincts : sur une ligne avec un
+           tiret quand la largeur le permet, empilés et centrés sinon. En un
+           seul texte, le nom se coupait en plein milieu sur téléphone
+           (« … OFFICIEL — GLOBAL » / « IMPACT CÔTE D'IVOIRE »). -->
+      <span class="outro__sponsor">
+        <span class="outro__sponsor-label">Sponsor officiel</span>
+        <strong>Global Impact Côte d'Ivoire</strong>
+      </span>
       © 2026 Talent de Demain FC — DEPUIS 2023
     </footer>
   </section>
 
-  <script src="js/i18n.js?v=2"></script>
+  <script src="js/i18n.js?v=3"></script>
   <script src="js/nav.js?v=2"></script>
   <!-- Doit précéder main.js : publie la source d'images que le moteur lit. -->
   <script src="js/hero-sequence.js?v=1"></script>

@@ -33,7 +33,7 @@
     'Talent de Demain FC — home': 'Talent de Demain FC — accueil',
     'Talent de Demain FC crest': 'Blason du Talent de Demain FC',
     'Join The Club': 'Rejoindre le club',
-    'Official sponsor —': 'Sponsor officiel —',
+    'Official sponsor': 'Sponsor officiel',
     'Official sponsor:': 'Sponsor officiel :',
     '© 2026 Talent de Demain FC — EST. 2023': '© 2026 Talent de Demain FC — DEPUIS 2023',
 

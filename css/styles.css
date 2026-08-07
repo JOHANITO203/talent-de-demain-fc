@@ -54,6 +54,17 @@
 /* ---------- Reset / base --------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Le site est conçu en thème clair. Cette déclaration accorde les éléments
+   natifs (ascenseurs, champs de formulaire) au thème.
+   ATTENTION — elle NE protège PAS de l'assombrissement automatique : mesuré,
+   Samsung Internet et le mode sombre de Chrome inversent la page malgré
+   elle, et c'est cohérent avec leur but, qui est justement de traiter les
+   pages sans thème sombre. Dire « je suis clair » leur confirme d'agir.
+   Le seul moyen de reprendre la main est de FOURNIR un thème sombre :
+   vérifié, avec color-scheme: light dark + un bloc prefers-color-scheme,
+   le navigateur cesse d'inverser et applique nos couleurs. À faire. */
+:root { color-scheme: light; }
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -588,7 +599,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* Official sponsor sits above the copyright, slightly stronger */
 .outro__sponsor {
-  display: block;
+  /* Deux blocs : côte à côte tant que ça tient, empilés et centrés sinon.
+     Le nom du sponsor ne se coupe donc jamais en deux. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px .7em;
   margin-bottom: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, .14);
@@ -597,6 +614,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   letter-spacing: .24em;
 }
 .outro__sponsor strong { letter-spacing: .16em; }
+/* Le tiret n'a de sens que sur une seule ligne — il est porté par le libellé
+   et disparaît avec l'empilement. */
+.outro__sponsor-label::after { content: '—'; margin-left: .7em; opacity: .55; }
 
 /* ==========================================================================
    Load-in choreography
@@ -797,6 +817,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .story__kicker { padding-bottom: 3px; margin-bottom: 4px; font-size: 11px; }
   .story__title  { font-size: 14px; }
   .story__text   { display: none; }      /* one line only at this size */
+
+  /* Le nom du sponsor passe sous son libellé, centré, comme sur desktop
+     quand la ligne est large. */
+  /* align-items: baseline (règle de base) se comporte comme un alignement au
+     début dès qu'on passe en colonne : sans ce centrage, le nom se collait à
+     gauche au lieu de rester sous son libellé. */
+  .outro__sponsor { flex-direction: column; align-items: center; gap: 5px; }
+  .outro__sponsor-label::after { content: none; }
 
   /* Compteur compact, glissé sous la bande de légende. Sa pastille translucide
      recouvre volontairement le haut de la boîte du maillot : c'est un bandeau
