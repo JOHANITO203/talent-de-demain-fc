@@ -49,6 +49,20 @@
   var narrow = window.matchMedia('(max-width: 1024px)').matches;
   if (!coarse && !narrow) return;          // desktop : moteur <video> intact
 
+  /* Le décodage matériel (js/hero-codec.js) a peut-être déjà pris le créneau.
+     Dans ce cas on ne télécharge RIEN : on se met en réserve, et on ne
+     démarre que s'il renonce — API absente, conteneur illisible, décodeur qui
+     refuse. La séquence JPEG reste la voie éprouvée, elle n'est pas
+     remplacée mais mise en second rideau. */
+  if (window.tddFrameSource) {
+    window.tddSequenceFallback = demarrerSequence;
+    return;
+  }
+  demarrerSequence();
+
+  function demarrerSequence() {
+    window.tddSequenceFallback = null;
+
   var COUNT = 193;
 
   /* JPEG et non WebP, à définition IDENTIQUE.
@@ -142,4 +156,5 @@
   load(0, function () {
     queue(wave1.slice(1), 6, function () { queue(wave2, 6); });
   });
+  }
 }());
