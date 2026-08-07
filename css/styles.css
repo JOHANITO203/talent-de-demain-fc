@@ -78,18 +78,22 @@
 /* ---------- Thème sombre ---------------------------------------------------
    Il n'existe pas seulement par confort : sans lui, Samsung Internet et le
    mode sombre automatique de Chrome inversent la page eux-mêmes, et le
-   résultat est mauvais (fond noir cru, nuances de la charte perdues,
-   détourage du maillot incohérent). Mesuré : déclarer color-scheme: light ne
-   les arrête PAS — c'est cohérent, ils visent justement les pages sans thème
-   sombre. Fournir le thème est le seul moyen de reprendre la main, et c'est
-   vérifié : le navigateur cesse alors d'inverser et applique ces valeurs.
+   résultat est mauvais. Mesuré : déclarer color-scheme: light ne les arrête
+   PAS — ils visent justement les pages sans thème sombre. Fournir le thème
+   est le seul moyen de reprendre la main, et c'est vérifié.
+
+   Deux déclencheurs, mêmes valeurs :
+     - la préférence du système, SAUF si le visiteur a choisi « clair » ;
+     - le choix explicite du visiteur (bouton de la barre, js/theme.js).
+   D'où le doublon de sélecteurs : une règle ne peut pas être à la fois
+   dans une media query et hors d'elle.
 
    Le fond n'est pas noir mais un brun très sombre, écho du blanc cassé chaud
-   du thème clair ; le texte n'est pas blanc pur, qui vibre sur fond sombre.
-   Les cartes deviennent plus CLAIRES que la page — en thème clair elles sont
-   sombres sur clair, elles restent donc lisibles comme des surfaces posées. */
+   du thème clair ; le texte n'est pas blanc pur, qui vibre. Les cartes
+   deviennent plus CLAIRES que la page, pour rester lisibles comme des
+   surfaces posées. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #141211;
     --ink: #EDEAE6;
     --ink-soft: #A8A39D;
@@ -113,9 +117,108 @@
     --glass-soft: rgba(26, 24, 22, .74);
   }
 }
+:root[data-theme="dark"] {
+    --bg: #141211;
+    --ink: #EDEAE6;
+    --ink-soft: #A8A39D;
+    --red: #E2543F;         /* remonté : le rouge d'origine manque de contraste */
 
-/* ---------- Reset / base --------------------------------------------------- */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    --panel: #211F1C;
+    --on-dark: #F3F1EE;
+    --band: #1C1A18;
+    --surface: #211F1C;
+    --btn-bg: #EDEAE6;
+    --btn-ink: #141211;
+    --btn-alt-bg: #EDEAE6;
+    --btn-alt-ink: #141211;
+
+    --line: rgba(255, 255, 255, .17);
+    --line-strong: rgba(255, 255, 255, .27);
+    --line-soft: rgba(255, 255, 255, .08);
+    --tint: rgba(255, 255, 255, .07);
+    --glass: rgba(26, 24, 22, .86);
+    --glass-strong: rgba(20, 18, 17, .97);
+    --glass-soft: rgba(26, 24, 22, .74);
+}
+
+/* ---------- Le héro reste clair, même en thème sombre -----------------------
+   Le maillot est détouré en temps réel contre le fond clair du studio. Sur
+   fond sombre, ses pixels de bord — qui portent ce fond clair — dessinent une
+   frange lumineuse : le vêtement paraît découpé aux ciseaux, et c'est ce qui
+   a été pris pour une perte de qualité de la vidéo.
+   La zone du héro rejoue donc les valeurs claires, sur un gris légèrement
+   assombri qui s'accorde au reste du thème sombre sans trahir le détourage.
+   Les propriétés personnalisées cascadent : tout ce qui vit dans le héro
+   (titre, légendes, compteur, bouton, carte média) suit sans une seule règle
+   supplémentaire. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hero-track {
+    --bg: #D2CFCA;
+    --ink: #141211;
+    --ink-soft: #3F3C39;
+    --red: #C13327;
+    --panel: #0D0D0D;
+    --on-dark: #ffffff;
+    --band: #101010;
+    --btn-bg: #101010;
+    --btn-ink: #ffffff;
+    --line: rgba(16, 16, 16, .18);
+    --line-strong: rgba(16, 16, 16, .24);
+    --line-soft: rgba(16, 16, 16, .06);
+    --tint: rgba(16, 16, 16, .05);
+    --glass: rgba(210, 207, 202, .86);
+    --glass-soft: rgba(210, 207, 202, .72);
+    /* Fondu vers la page sur les derniers pixels de la piste. La page n'est
+       pas assez haute pour que le héro sorte entièrement : il en reste ~84px
+       derrière la barre en bas de page. En thème clair c'est invisible, en
+       sombre cela dessinait une couture grise au-dessus de la section finale.
+       La couleur de fin est le MÊME gris en alpha 0, pas `transparent` : ce
+       dernier vaut rgba(0,0,0,0) et teinte le dégradé en gris sale. */
+    background: linear-gradient(to bottom,
+                var(--bg) calc(100% - 170px), rgba(210, 207, 202, 0));
+    color: var(--ink);
+  }
+  :root:not([data-theme="light"]).is-over-hero .nav {
+    --bg: #D2CFCA;
+    --ink: #141211;
+    --line-strong: rgba(16, 16, 16, .24);
+    --tint: rgba(16, 16, 16, .05);
+    color: var(--ink);
+  }
+}
+:root[data-theme="dark"] .hero-track {
+    --bg: #D2CFCA;
+    --ink: #141211;
+    --ink-soft: #3F3C39;
+    --red: #C13327;
+    --panel: #0D0D0D;
+    --on-dark: #ffffff;
+    --band: #101010;
+    --btn-bg: #101010;
+    --btn-ink: #ffffff;
+    --line: rgba(16, 16, 16, .18);
+    --line-strong: rgba(16, 16, 16, .24);
+    --line-soft: rgba(16, 16, 16, .06);
+    --tint: rgba(16, 16, 16, .05);
+    --glass: rgba(210, 207, 202, .86);
+    --glass-soft: rgba(210, 207, 202, .72);
+    /* Fondu vers la page sur les derniers pixels de la piste. La page n'est
+       pas assez haute pour que le héro sorte entièrement : il en reste ~84px
+       derrière la barre en bas de page. En thème clair c'est invisible, en
+       sombre cela dessinait une couture grise au-dessus de la section finale.
+       La couleur de fin est le MÊME gris en alpha 0, pas `transparent` : ce
+       dernier vaut rgba(0,0,0,0) et teinte le dégradé en gris sale. */
+    background: linear-gradient(to bottom,
+                var(--bg) calc(100% - 170px), rgba(210, 207, 202, 0));
+    color: var(--ink);
+}
+:root[data-theme="dark"].is-over-hero .nav {
+    --bg: #D2CFCA;
+    --ink: #141211;
+    --line-strong: rgba(16, 16, 16, .24);
+    --tint: rgba(16, 16, 16, .05);
+    color: var(--ink);
+}
 
 /* Le site sait faire les deux thèmes, et le DIT — c'est cette déclaration,
    pas un choix de confort, qui coupe l'assombrissement sauvage.

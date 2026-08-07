@@ -83,10 +83,6 @@
   if (!track || !video || !canvas) return;
 
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  /* Déclaré ici, avant tout usage : la placer plus bas laissait la variable
-     remontée mais non affectée au moment où l'écouteur de thème la lisait,
-     ce qui levait une exception et interrompait tout le moteur du héro. */
-  var darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
   /* Runtime copy in the active language (see js/i18n.js) */
   var T = (window.TDD_I18N && window.TDD_I18N.t) || { scroll: 'Scroll', rotation: 'Rotation' };
@@ -203,10 +199,6 @@
     }
   }
 
-  if (darkScheme.addEventListener) {
-    darkScheme.addEventListener('change', function () { syncHalo(); drawFrame(); });
-  }
-
   window.addEventListener('resize', syncHeroLayout);
   // fonts change the copy block's height, so re-measure once they land
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeroLayout);
@@ -283,7 +275,6 @@
   var FRAG =
     'precision mediump float;' +
     'uniform sampler2D uTex;' +
-    'uniform float uHalo;' +   // intensite du halo studio, 0 en theme sombre
     'uniform vec2 uTexel;' +   // 1 / video resolution, for the sharpen taps
     'varying vec2 vUv;' +
     'void main(){' +
@@ -324,18 +315,14 @@
        // (254) while the page is a warm off-white (240), so a strong halo
        // reads as a bright smear that washes out the headline behind it.
     '  vec2 hd = (vUv - vec2(.5, .52)) * vec2(1., .8);' +
-    '  float halo = (1. - smoothstep(.10, .38, length(hd))) * uHalo;' +
+    '  float halo = (1. - smoothstep(.10, .38, length(hd))) * .18;' +
     '  alpha = max(alpha, halo);' +
        // Premultiplied output (canvas is composited premultiplied);
        // the sharpened color carries the extra detail.
     '  gl_FragColor = vec4(cSharp * alpha, alpha);' +
     '}';
 
-  var gl = null, glTex = null, glTexelLoc = null, glHaloLoc = null;
-
-  function syncHalo() {
-    if (gl && glHaloLoc) gl.uniform1f(glHaloLoc, darkScheme.matches ? 0 : 0.18);
-  }
+  var gl = null, glTex = null, glTexelLoc = null;
 
   function initWebGL() {
     gl = canvas.getContext('webgl', {
@@ -381,13 +368,6 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
     gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
-    /* Le halo garde une part du fond de studio autour du maillot : sur la
-       page claire il restitue la profondeur photographique que le détourage
-       enlève. En thème sombre ce même fond quasi blanc deviendrait une tache
-       lumineuse — on le coupe. */
-    glHaloLoc = gl.getUniformLocation(prog, 'uHalo');
-    syncHalo();
-
     glTexelLoc = gl.getUniformLocation(prog, 'uTexel');
     gl.uniform2f(glTexelLoc, 1 / 900, 1 / 1080); // updated once metadata loads
     return true;
@@ -556,6 +536,7 @@
      spin ends. The turn is seamless (last frame ≈ first frame), so landing
      back on 0 is invisible. Any scroll cancels it, and the rotation then
      sweeps smoothly to the scroll position instead of jumping. */
+  var wasOverHero = null;   // dernier état connu, pour ne toucher au DOM qu'au changement
   var lastNow = 0;   // horloge du lissage (voir tick)
   var frames = 0;    // compteur d'images, lu par la sonde ?diag=1
 
@@ -572,6 +553,25 @@
 
     // Source de vérité du défilement : mesurée ici, pas reçue par événement.
     readScroll();
+
+    /* En thème sombre le héro garde un fond clair (voir styles.css). La barre
+       de navigation est fixe et le survole : elle doit s'accorder à lui tant
+       qu'il est DERRIÈRE elle, puis revenir au thème de la page.
+       La bonne question n'est pas « la piste est-elle encore visible ? » mais
+       « qu'y a-t-il derrière la barre ? » : en bas de page il restait 240px de
+       piste sous l'écran, et la barre gardait son gris clair par-dessus la
+       section finale, sombre. On compare donc au bas de la barre. */
+    var navEl = document.querySelector('.nav');
+    var navH = navEl ? navEl.offsetHeight : 0;
+    /* 170 : longueur du fondu de fin de piste (styles.css). La barre bascule
+       au même endroit que lui, sinon elle garde son gris clair au-dessus de
+       la section finale, sombre — visible en bas de page, où il reste ~84px
+       de héro que la hauteur de la page ne permet pas de faire sortir. */
+    var overHero = track.getBoundingClientRect().bottom > navH + 170;
+    if (overHero !== wasOverHero) {
+      wasOverHero = overHero;
+      document.documentElement.classList.toggle('is-over-hero', overHero);
+    }
     if (introActive && window.pageYOffset > 2) introActive = false;
 
     /* Lissage indépendant de la cadence d'affichage.

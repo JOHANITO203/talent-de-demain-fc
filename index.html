@@ -31,9 +31,13 @@
   <!-- Fonts are self-hosted (see css/styles.css @font-face) — no CDN request -->
   <!-- Marks that JS is running, so the load-in animation can hide elements
        at their start position without ever hiding them for no-JS users. -->
-  <script>document.documentElement.classList.add('js-anim');</script>
+  <script>document.documentElement.classList.add('js-anim');
+    /* Choix de thème mémorisé, appliqué avant le rendu : sinon la page
+       s'affiche un instant dans le mauvais thème. */
+    try { var _t = localStorage.getItem('tdd-theme');
+          if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
   <!-- ?v= : cache-busting — bump on every CSS/JS change -->
-  <link rel="stylesheet" href="css/styles.css?v=31">
+  <link rel="stylesheet" href="css/styles.css?v=32">
   <!-- Preload the scrub video so the hero is ready before the user scrolls -->
   <!-- Seuil aligné sur l'aiguillage de js/hero-sequence.js : au-dessous de
        1025px le héro utilise la séquence d'images, précharger la vidéo y
@@ -194,9 +198,10 @@
   </section>
 
   <script src="js/i18n.js?v=3"></script>
+  <script src="js/theme.js?v=1"></script>
   <script src="js/nav.js?v=2"></script>
   <!-- Doit précéder main.js : publie la source d'images que le moteur lit. -->
   <script src="js/hero-sequence.js?v=1"></script>
-  <script src="js/main.js?v=34"></script>
+  <script src="js/main.js?v=35"></script>
 </body>
 </html>

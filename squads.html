@@ -28,8 +28,12 @@
   <meta name="color-scheme" content="light dark">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="assets/img/logo-crest.png">
-  <script>document.documentElement.classList.add('js-anim');</script>
-  <link rel="stylesheet" href="css/styles.css?v=31">
+  <script>document.documentElement.classList.add('js-anim');
+    /* Choix de thème mémorisé, appliqué avant le rendu : sinon la page
+       s'affiche un instant dans le mauvais thème. */
+    try { var _t = localStorage.getItem('tdd-theme');
+          if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
+  <link rel="stylesheet" href="css/styles.css?v=32">
   <link rel="stylesheet" href="css/pages.css?v=20">
 
   <!-- ===================== MESURE D'AUDIENCE =====================
@@ -319,6 +323,7 @@
   </footer>
 
   <script src="js/i18n.js?v=3"></script>
+  <script src="js/theme.js?v=1"></script>
   <script src="js/nav.js?v=2"></script>
   <script src="js/pages.js?v=9"></script>
 </body>
