@@ -133,14 +133,24 @@
       sticky.style.removeProperty('--jersey-bottom');
       return;
     }
-    if (!titleEl || !copyEl) return;
+    if (!copyEl) return;
     var vh = window.innerHeight;
     var sTop = sticky.getBoundingClientRect().top;
-    var bandTop = sTop + titleEl.offsetTop + titleEl.offsetHeight + 6;
+
+    /* La bande part de SOUS LA BARRE, pas de sous le titre.
+       L'ancrer sous le titre était une erreur de conception : le grand titre
+       est un fond décoratif que le maillot doit TRAVERSER — c'est ce plan
+       superposé qui fait l'immersion du héro. En le rangeant dessous, le
+       maillot perdait un tiers de sa hauteur et le héro son relief.
+       La seule chose dont il doit se garder, c'est le texte utile. */
+    var navEl2 = document.querySelector('.nav');
+    var bandTop = sTop + (navEl2 ? navEl2.offsetHeight : 0) + 6;
     var bandBottom = sTop + copyEl.offsetTop - 8;
     var band = bandBottom - bandTop;
     if (band < 90) return;                  // trop serré : on laisse le CSS
-    sticky.style.setProperty('--jersey-h', Math.min(vh * 0.42, band) + 'px');
+    // 0.62 : le maillot occupe la bande sans la saturer. Au-delà, le col
+    // touche la barre sur les écrans les plus courts.
+    sticky.style.setProperty('--jersey-h', Math.min(vh * 0.62, band) + 'px');
     sticky.style.setProperty('--jersey-bottom', (vh - bandBottom) + 'px');
   }
 
