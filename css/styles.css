@@ -733,11 +733,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
      les 10,5px, soit ~14 pas/s au doigt lent — pendant que la page, elle,
      affichait 60 images/s. D'où une rotation moins fluide que sur desktop,
      où la molette avance par crans bien plus larges et masque le phénomène.
-     À 260vh la course tombe à ~1200px, soit 6,2px par pas et ~24 pas/s :
-     la cadence du cinéma, sans une image de plus ni un octet de plus.
+     À 235vh la course tombe à ~1015px, soit 5,3px par pas et ~28,5 pas/s —
+     la densité qu'aurait donnée le doublement des images, obtenue sans une
+     image de plus ni un octet de plus. Réglable à la volée par ?piste=<vh>
+     (voir js/main.js) : le bon réglage est une affaire de ressenti.
      Le desktop garde sa course de 480vh (ligne 227) : sa pagination à la
      molette n'a jamais posé ce problème. */
-  .hero-track { height: 260vh; }
+  .hero-track { height: 235vh; }
 
   .hero-title {
     top: calc(var(--nav-h) + 6px);

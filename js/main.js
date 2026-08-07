@@ -221,6 +221,17 @@
   );
   var hasOverride = !isNaN(scrubOverride);
 
+  /* ?piste=200 — règle la course du héro en vh, à la volée.
+     La course détermine la finesse perçue de la rotation : 193 pas répartis
+     sur moins de défilement font plus de pas par seconde au même geste.
+     Le bon réglage est une affaire de ressenti, pas de calcul — ce paramètre
+     permet de l'essayer sur l'appareil réel sans redéployer à chaque valeur.
+     Bornes larges mais fermées, pour qu'une valeur absurde ne casse rien. */
+  var pisteVh = parseFloat(new URLSearchParams(location.search).get('piste'));
+  if (!isNaN(pisteVh) && pisteVh >= 120 && pisteVh <= 600) {
+    track.style.height = pisteVh + 'vh';
+  }
+
   /* ---- Where the pixels come from ---------------------------------------
      On a touch device js/hero-sequence.js has published an image sequence:
      no video decoder to wake, so nothing that can stall. Everything else in
@@ -761,9 +772,12 @@
           '..' + track.offsetHeight +
           '  course ' + Math.round(track.offsetHeight - window.innerHeight) +
           '   ' + fps + ' im/s\n' +
+        'piste ' + Math.round(track.offsetHeight / window.innerHeight * 100) + 'vh' +
+          '   ~' + (193 * 150 /
+            Math.max(1, track.offsetHeight - window.innerHeight)).toFixed(1) +
+          ' pas/s au doigt lent  (cinema 24)\n' +
         'mouvement reduit : ' + (reducedMotion ? 'OUI' : 'non') +
-          '   webgl ' + (gl ? 'oui' : 'NON') +
-          '   piste css ' + Math.round(track.offsetHeight / window.innerHeight * 100) + 'vh';
+          '   webgl ' + (gl ? 'oui' : 'NON');
     }, 300);
   }
 })();
