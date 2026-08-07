@@ -127,6 +127,11 @@
   var titleEl = document.querySelector('.hero-title');
   var stacked = window.matchMedia('(max-width: 900px)');
 
+  function navH0() {
+    var n = document.querySelector('.nav');
+    return n ? n.offsetHeight : 0;
+  }
+
   function syncJerseyBand() {
     if (!stacked.matches) {                 // desktop : le CSS garde la main
       sticky.style.removeProperty('--jersey-h');
@@ -155,29 +160,45 @@
        son ancrage d'origine le posait 34px sous le haut de la boîte, ce qui
        tombait dans la marge transparente quand le maillot était petit, et
        en plein sur le torse une fois agrandi. */
-    /* Pile mobile, de bas en haut : texte, compteur, maillot, et le grand
-       titre en fond que le maillot traverse. Le compteur passe SOUS le
-       maillot, comme sur desktop — au-dessus, il se posait sur le col ou sur
-       le torse selon la taille du maillot.
-       Le maillot GRANDIT de 20% pendant le défilement (scale dans tick(),
-       origine au bas du vêtement) : c'est son extension maximale qui doit
-       tenir, pas sa taille au repos. Sans cela le col passait sous la barre
-       en fin de rotation. */
-    var GROW = 1.2;                          // échelle maximale (voir tick)
-    var mH = meterEl ? meterEl.offsetHeight : 30;
-    var copyY = sTop + copyEl.offsetTop;     // haut du bloc de texte
-    var meterBottom = vh - copyY + 12;       // le compteur, juste au-dessus
-    var jerseyBottom = meterBottom + mH + 12;
-    var hMax = (vh - jerseyBottom) - bandTop;
-    if (hMax < 90) return;                   // trop serré : on laisse le CSS
-    sticky.style.setProperty('--jersey-h', (hMax / GROW) + 'px');
-    sticky.style.setProperty('--jersey-bottom', jerseyBottom + 'px');
-    sticky.style.setProperty('--meter-touch', meterBottom + 'px');
+    /* Taille du maillot : RELEVÉE sur la capture de référence du client.
+       Sur son écran de 648px, le canvas mesurait 299px de haut à 85% du
+       défilement, où l'échelle vaut 1,17 — soit 256px au repos, c'est-à-dire
+       0,395 x la hauteur d'écran. C'est cette proportion qui fait référence,
+       pas un calcul de bande : mes tentatives de la déduire de l'espace
+       disponible l'ont rapetissée deux fois de suite.
+
+       Position : le bas de la boîte se cale 10px au-dessus du bloc de texte,
+       comme sur la capture. Le compteur se glisse juste au-dessus du texte,
+       sous le vêtement — la boîte du maillot a une large marge transparente
+       en bas, le compteur y passe sans toucher au tissu. */
+    var copyY = sTop + copyEl.offsetTop;      // haut du bloc de texte
+    var restFromBottom = vh - copyY;
+
+    /* La proportion visée s'applique telle quelle quand la place existe.
+       En français le bloc de texte fait deux lignes de plus qu'en anglais —
+       le maillot passerait alors sous la barre. On le réduit alors juste
+       autant qu'il faut, et pas davantage. GROW : le défilement l'agrandit
+       de 20%, c'est cette extension qui doit dégager la barre. */
+    var GROW = 1.2;
+    /* C'est le COL qui doit dégager la barre, pas la boîte : celle-ci porte
+       11,6% de marge transparente au-dessus du vêtement (mesuré sur la source
+       900x1080, le maillot y occupe y=125..950). Clamper la boîte rabotait le
+       maillot de 35px pour rien. */
+    var MARGE_HAUT = 0.116;
+    var libre = (copyY - 10 - (navH0() + 6)) / (GROW * (1 - MARGE_HAUT));
+    var h = Math.min(vh * 0.395, libre);
+    sticky.style.setProperty('--jersey-h', h + 'px');
+    /* Légendes : sur les côtés comme sur desktop, à hauteur du haut du
+       maillot — plus centrées en travers du titre. */
+    var capTop = Math.max(navH0() + 10, copyY - 10 - h * GROW - 6);
+    sticky.style.setProperty('--story-top-l', capTop + 'px');
+    sticky.style.setProperty('--story-top-r', capTop + 'px');
+    sticky.style.setProperty('--jersey-bottom', (restFromBottom + 10) + 'px');
+    sticky.style.setProperty('--meter-touch', (restFromBottom + 4) + 'px');
   }
 
   function syncHeroLayout() {
     if (!sticky) return;
-    syncJerseyBand();
     var vh = window.innerHeight;
 
     // clear any value we set before measuring, or we would measure our own
@@ -197,11 +218,13 @@
 
     // Desktop: captions sit at 46% unless the block underneath reaches up
     // into them, in which case they rise just enough to clear it.
-    var wanted = vh * 0.46, ceiling = vh * 0.14;
-    sticky.style.setProperty('--story-top-l',
-      Math.max(ceiling, Math.min(wanted, copyTop - storyH - GAP)) + 'px');
-    sticky.style.setProperty('--story-top-r',
-      Math.max(ceiling, Math.min(wanted, cardTop - storyH - GAP)) + 'px');
+    if (!stacked.matches) {
+      var wanted = vh * 0.46, ceiling = vh * 0.14;
+      sticky.style.setProperty('--story-top-l',
+        Math.max(ceiling, Math.min(wanted, copyTop - storyH - GAP)) + 'px');
+      sticky.style.setProperty('--story-top-r',
+        Math.max(ceiling, Math.min(wanted, cardTop - storyH - GAP)) + 'px');
+    }
 
     // Bottom-anchored tiers use this as a floor (see the ≤900px rules).
     sticky.style.setProperty('--copy-clear',
@@ -209,6 +232,12 @@
 
     // The meter is centred: on narrower desktops the copy block reaches the
     // middle of the screen and they cross. Lift it above the copy only then.
+    /* En dernier : sur écran empilé, il repose --story-top-* et le maillot.
+       Appelé en premier, ses valeurs étaient écrasées par le calcul desktop
+       ci-dessus, et les légendes retombaient au milieu de l'écran, sur le
+       maillot. */
+    syncJerseyBand();
+
     if (meterEl && copyEl && vh && meterEl.offsetParent === sticky) {
       /* Layout geometry (offset*), NOT getBoundingClientRect. The meter plays
          an entrance animation that holds it 18px below its resting place for

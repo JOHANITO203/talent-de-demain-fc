@@ -231,6 +231,15 @@
    est peinte. Ne pas retirer l'un sans l'autre. */
 :root { color-scheme: light dark; }
 
+/* ---------- Reset / base ---------------------------------------------------
+   REMISE EN PLACE : mon script de refonte du thème sombre avait découpé le
+   fichier entre deux repères et emporté ce bloc au passage. Conséquences
+   visibles sur téléphone — le corps de page reprenait la marge de 8px du
+   navigateur (bandes sombres sur les côtés, page qui ne remplissait plus la
+   largeur) et, sans box-sizing, tout élément à rembourrage devenait plus
+   large que prévu. Ne pas retirer. */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -962,16 +971,24 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .story__item--left,
   .story__item--right {
     left: var(--gutter);
-    right: var(--gutter);
+    right: auto;
     top: auto;
-    /* Juste au-dessus du maillot. --jersey-bottom intègre désormais le
-       plancher --copy-clear, donc ce qui est ancré au haut du maillot dégage
-       le bloc de texte par construction.
-       NE PAS remonter davantage : à +52px la légende venait s'écraser sur le
-       grand titre en 375x667, illisible — testé, pire que le mal soigné. */
-    bottom: calc(var(--jersey-bottom) + var(--jersey-h) + 8px);
-    max-width: none;
-    text-align: center;
+    /* Sur les CÔTÉS, comme sur desktop : centrées en pleine largeur, elles
+       venaient se poser en travers du grand titre, et deux grands textes
+       superposés ne se lisent ni l'un ni l'autre. Alignées à gauche/droite
+       elles flanquent le maillot au lieu de le barrer.
+       La largeur est bornée : sur un écran de 338px le maillot en occupe
+       déjà 250, il ne reste pas la place d'un bloc pleine largeur. */
+    top: var(--story-top-l, 22%);
+    bottom: auto;
+    max-width: 56%;
+    text-align: left;
+  }
+  .story__item--right {
+    left: auto;
+    right: var(--gutter);
+    top: var(--story-top-r, 22%);
+    text-align: right;
   }
   /* The strip sits over the giant headline on shorter screens: grey on grey
      was unreadable. A soft panel guarantees contrast whatever passes behind,
