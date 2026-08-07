@@ -748,7 +748,10 @@
           '  piste ' + Math.round(track.getBoundingClientRect().top) +
           '..' + track.offsetHeight +
           '  course ' + Math.round(track.offsetHeight - window.innerHeight) +
-          '   ' + fps + ' im/s';
+          '   ' + fps + ' im/s\n' +
+        'mouvement reduit : ' + (reducedMotion ? 'OUI' : 'non') +
+          '   webgl ' + (gl ? 'oui' : 'NON') +
+          '   piste css ' + Math.round(track.offsetHeight / window.innerHeight * 100) + 'vh';
     }, 300);
   }
 })();
