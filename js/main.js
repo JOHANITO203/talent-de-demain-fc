@@ -188,11 +188,12 @@
     var libre = (copyY - 10 - (navH0() + 6)) / (GROW * (1 - MARGE_HAUT));
     var h = Math.min(vh * 0.395, libre);
     sticky.style.setProperty('--jersey-h', h + 'px');
-    /* Légendes : sur les côtés comme sur desktop, à hauteur du haut du
-       maillot — plus centrées en travers du titre. */
-    var capTop = Math.max(navH0() + 10, copyY - 10 - h * GROW - 6);
-    sticky.style.setProperty('--story-top-l', capTop + 'px');
-    sticky.style.setProperty('--story-top-r', capTop + 'px');
+    /* Légende : juste au-dessus du compteur, dans la bande libre sous
+       l'ourlet du maillot. C'est le seul endroit de l'écran qui ne masque ni
+       le grand titre ni le vêtement. */
+    var mH0 = meterEl ? meterEl.offsetHeight : 30;
+    sticky.style.setProperty('--story-bottom',
+      (restFromBottom + 4 + mH0 + 2) + 'px');
     sticky.style.setProperty('--jersey-bottom', (restFromBottom + 10) + 'px');
     sticky.style.setProperty('--meter-touch', (restFromBottom + 4) + 'px');
   }
