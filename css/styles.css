@@ -438,7 +438,16 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: sticky;
   top: 0;
   height: 100vh;
-  height: 100svh;
+  /* dvh et non svh. svh est la hauteur PETITE de la fenêtre — celle qu'on a
+     quand les barres du navigateur sont visibles. Dès qu'elles se rétractent,
+     la zone visible grandit mais le héro restait à sa taille : il restait
+     178px de vide sous lui, et le bloc de texte, ancré à son bas, s'arrêtait
+     au milieu de l'écran. Constaté sur un Galaxy S23+ à l'enregistrement
+     d'écran ; aucun émulateur ne distingue ces trois unités.
+     dvh suit la zone réellement visible : le héro la remplit toujours. Le
+     changement de hauteur qui en découle est absorbé par la transition
+     posée plus bas. */
+  height: 100dvh;
   overflow: hidden;
   background: var(--bg);
   isolation: isolate;
