@@ -56,7 +56,30 @@
 
   var imgs = new Array(COUNT);
   var done = new Array(COUNT);
+  var chaud = new Array(COUNT);   // image déjà décodée d'avance
   var loadedCount = 0;
+
+  /* Préchauffage du décodage.
+     Les images sont des <img> et non des ImageBitmap, volontairement : le
+     navigateur peut alors libérer leur forme décodée sous pression mémoire,
+     ce qui évite de faire tomber le téléphone (193 images de 900x1080
+     épinglées feraient 750 Mo). La contrepartie est qu'il lui arrive de
+     redécoder AU MOMENT du dessin, et ce décodage synchrone coûte une image.
+     Mesuré sur Galaxy S23+ dans Samsung Internet : médiane à 59,9 im/s mais
+     un 90e centile à 30 — une image sur dix doublait, d'où un battement
+     perçu comme un manque de fluidité.
+     On demande donc le décodage à l'avance pour les images qui arrivent.
+     decode() rend la main immédiatement si l'image est déjà prête. */
+  function prechauffer(centre) {
+    for (var d = -2; d <= 7; d++) {
+      var i = centre + d;
+      if (i < 0 || i >= COUNT || chaud[i] || !done[i]) continue;
+      chaud[i] = true;
+      if (imgs[i].decode) {
+        imgs[i].decode().catch(function () { /* sans importance */ });
+      }
+    }
+  }
 
   function pad(n) { return n < 100 ? (n < 10 ? '00' + n : '0' + n) : '' + n; }
 
@@ -107,6 +130,7 @@
     frameAt: function (p) {
       if (!(p >= 0)) p = 0; else if (p > 1) p = 1;
       var want = Math.round(p * (COUNT - 1));
+      prechauffer(want);
       if (done[want]) return imgs[want];
       for (var d = 1; d < COUNT; d++) {
         if (want - d >= 0 && done[want - d]) return imgs[want - d];
