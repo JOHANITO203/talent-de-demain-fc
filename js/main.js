@@ -146,12 +146,33 @@
     var navEl2 = document.querySelector('.nav');
     var bandTop = sTop + (navEl2 ? navEl2.offsetHeight : 0) + 6;
     var bandBottom = sTop + copyEl.offsetTop - 8;
-    var band = bandBottom - bandTop;
-    if (band < 90) return;                  // trop serré : on laisse le CSS
-    // 0.62 : le maillot occupe la bande sans la saturer. Au-delà, le col
-    // touche la barre sur les écrans les plus courts.
-    sticky.style.setProperty('--jersey-h', Math.min(vh * 0.62, band) + 'px');
-    sticky.style.setProperty('--jersey-bottom', (vh - bandBottom) + 'px');
+
+    /* Le maillot GRANDIT de 20% pendant le défilement (scale dans tick(),
+       origine au bas du vêtement) : c'est son extension maximale qui doit
+       tenir dans la bande, pas sa taille au repos. Sans cela le col passait
+       sous la barre en fin de rotation — constaté en QA.
+       On réserve aussi la place du compteur au-dessus de cette extension :
+       son ancrage d'origine le posait 34px sous le haut de la boîte, ce qui
+       tombait dans la marge transparente quand le maillot était petit, et
+       en plein sur le torse une fois agrandi. */
+    /* Pile mobile, de bas en haut : texte, compteur, maillot, et le grand
+       titre en fond que le maillot traverse. Le compteur passe SOUS le
+       maillot, comme sur desktop — au-dessus, il se posait sur le col ou sur
+       le torse selon la taille du maillot.
+       Le maillot GRANDIT de 20% pendant le défilement (scale dans tick(),
+       origine au bas du vêtement) : c'est son extension maximale qui doit
+       tenir, pas sa taille au repos. Sans cela le col passait sous la barre
+       en fin de rotation. */
+    var GROW = 1.2;                          // échelle maximale (voir tick)
+    var mH = meterEl ? meterEl.offsetHeight : 30;
+    var copyY = sTop + copyEl.offsetTop;     // haut du bloc de texte
+    var meterBottom = vh - copyY + 12;       // le compteur, juste au-dessus
+    var jerseyBottom = meterBottom + mH + 12;
+    var hMax = (vh - jerseyBottom) - bandTop;
+    if (hMax < 90) return;                   // trop serré : on laisse le CSS
+    sticky.style.setProperty('--jersey-h', (hMax / GROW) + 'px');
+    sticky.style.setProperty('--jersey-bottom', jerseyBottom + 'px');
+    sticky.style.setProperty('--meter-touch', meterBottom + 'px');
   }
 
   function syncHeroLayout() {
