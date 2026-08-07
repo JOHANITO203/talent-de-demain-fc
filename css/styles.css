@@ -726,7 +726,18 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
   .nav__brand img { width: 42px; }
 
-  .hero-track { height: 380vh; }         /* shorter runway on touch     */
+  /* Course de défilement du héro sur tactile.
+     Elle ne règle pas seulement la durée du héro : elle règle la FINESSE
+     perçue de la rotation. La séquence compte 193 pas ; répartis sur 2030px
+     de défilement (mesuré sur l'appareil du client), cela faisait un pas tous
+     les 10,5px, soit ~14 pas/s au doigt lent — pendant que la page, elle,
+     affichait 60 images/s. D'où une rotation moins fluide que sur desktop,
+     où la molette avance par crans bien plus larges et masque le phénomène.
+     À 260vh la course tombe à ~1200px, soit 6,2px par pas et ~24 pas/s :
+     la cadence du cinéma, sans une image de plus ni un octet de plus.
+     Le desktop garde sa course de 480vh (ligne 227) : sa pagination à la
+     molette n'a jamais posé ce problème. */
+  .hero-track { height: 260vh; }
 
   .hero-title {
     top: calc(var(--nav-h) + 6px);
