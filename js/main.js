@@ -44,6 +44,7 @@
   var rotLabel = document.getElementById('rotation-label');
   var rotLine  = document.getElementById('rotation-line');
   var rotDeg   = document.getElementById('rotation-deg');
+  var cutEl    = document.getElementById('hero-cut');
   var heroTitle = document.querySelector('.hero-title');
 
   /* ---- Kinetic headline entrance -----------------------------------------
@@ -703,11 +704,15 @@
 
     // Cinematic touches tied to the same progress value:
     // headline lines drift apart and recede in depth, jersey grows slightly.
-    var drift = smooth * 6; // vw
+    /* Le titre part sur ses rails ET se comprime : le chasse se resserre à
+       mesure qu'il recule. C'est ce détail typographique qui fait lire un
+       éloignement plutôt qu'un simple rétrécissement. */
+    var drift = smooth * 13; // vw
     titleLines.forEach(function (line) {
       var dir = parseFloat(line.dataset.parallax || '0');
       line.style.transform = 'translateX(' + (dir * drift) + 'vw)' +
-                             ' scale(' + (1 - smooth * 0.08).toFixed(4) + ')';
+                             ' scale(' + (1 - smooth * 0.09).toFixed(4) + ')';
+      line.style.letterSpacing = (-smooth * 0.022).toFixed(4) + 'em';
     });
     if (heroTitle) {
       // The title recedes into the background as the jersey comes forward.
@@ -730,23 +735,76 @@
       progress.style.transform = 'scaleY(' + smooth + ')';
     }
 
-    // Story captions: fade/slide in and out inside their rotation window.
-    var FADE = 0.05; // progress span used for each fade edge
+    /* Repères techniques. Trois temps au lieu d'un fondu :
+       le trait rouge se tire vers le maillot, le volet rouge balaie la
+       plaque, et le texte est libéré derrière lui. La sortie repart du côté
+       d'où le repère est venu. */
+    var FADE = 0.05;                 // fenêtre d'entrée et de sortie
     storyItems.forEach(function (s) {
       var a = Math.min((smooth - s.from) / FADE, (s.to - smooth) / FADE, 1);
       a = Math.max(0, Math.min(1, a));
-      var shift = (1 - a) * 18 * (s.right ? 1 : -1); // slide from the edge
+      var shift = (1 - a) * 18 * (s.right ? 1 : -1);
       s.el.style.opacity = a.toFixed(3);
       s.el.style.transform = 'translateX(' + shift.toFixed(1) + 'px)';
+      /* Le volet est un BALAYAGE, et seulement À L'ENTRÉE.
+         Étalé sur toute la fenêtre il recouvrait le bloc entier à la sortie
+         — et à demi-opacité, en même temps que la traînée de fin de héro,
+         cela se lisait comme une erreur d'affichage. À la sortie le repère
+         se contente de repartir du côté d'où il est venu. */
+      var entree = (smooth - s.from) / FADE;
+      var v = 0;
+      if (entree >= 0 && entree <= 1) {
+        v = entree < 0.28 ? entree / 0.28 : Math.max(0, 1 - (entree - 0.28) / 0.26);
+      }
+      s.el.style.setProperty('--t', a.toFixed(3));
+      s.el.style.setProperty('--v', v.toFixed(3));
     });
 
     // Rotation meter follows the VIDEO, so the intro spin reads live too.
     var deg = Math.round(vSmooth * 360);
     if (rotDeg)  rotDeg.textContent = deg + '°';
-    if (rotLine) rotLine.style.transform = 'scaleX(' + vSmooth + ')';
+    if (rotLine) {
+      // découpe plutôt qu'échelle : étirer déformerait la graduation
+      rotLine.style.clipPath = 'inset(0 ' + ((1 - vSmooth) * 100).toFixed(2) + '% 0 0)';
+      if (rotLine.parentNode) {
+        rotLine.parentNode.style.setProperty('--p', (vSmooth * 100).toFixed(2) + '%');
+      }
+    }
     if (rotLabel) {
       rotLabel.style.opacity = vSmooth < 0.02 ? '1' : '.45';
       rotLabel.textContent = vSmooth < 0.02 ? T.scroll : T.rotation;
+    }
+
+    /* La coupure de fin de héro : une traînée qui part du curseur de la
+       jauge, dont on prend la position réelle à l'écran. Deux temps
+       séparés — la traînée file d'abord seule à l'horizontale, puis
+       l'ouverture en hauteur suit. Sans cette séparation, on ne lit qu'un
+       rideau. Brève : les sept derniers centièmes du parcours. */
+    if (cutEl) {
+      var ct = smooth > 0.93 ? Math.min(1, (smooth - 0.93) / 0.07) : 0;
+      if (ct <= 0) {
+        cutEl.style.clipPath = 'inset(100% 100% 0 0)';
+      } else {
+        var lineEl = rotLine && rotLine.parentNode;
+        var cx = 50, cy = 92;
+        if (lineEl) {
+          var lr = lineEl.getBoundingClientRect();
+          if (lr.width) {
+            cx = ((lr.left + vSmooth * lr.width) / window.innerWidth) * 100;
+            cy = ((lr.top + lr.height / 2) / window.innerHeight) * 100;
+          }
+        }
+        var fil = Math.min(1, ct / 0.5);
+        var ouv = ct > 0.5 ? (ct - 0.5) / 0.5 : 0;
+        var ez = function (x) { return 1 - Math.pow(1 - x, 3); };
+        var ea = ez(fil);
+        var eb = Math.max(0.014, ez(ouv));   // plancher : la traînée reste visible
+        cutEl.style.clipPath = 'inset(' +
+          Math.max(0, cy - eb * cy).toFixed(2) + '% ' +
+          Math.max(0, (100 - cx) - ea * (100 - cx)).toFixed(2) + '% ' +
+          Math.max(0, (100 - cy) - eb * (100 - cy)).toFixed(2) + '% ' +
+          Math.max(0, cx - ea * cx).toFixed(2) + '%)';
+      }
     }
 
     requestAnimationFrame(tick);

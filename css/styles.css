@@ -590,6 +590,39 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .btn--light { background: var(--btn-alt-bg); color: var(--btn-alt-ink); }
 
 /* ---- Scroll-synced story captions (opacity/motion driven by main.js) ---- */
+/* Repère technique : un trait rouge se tire vers le maillot, puis un volet
+   rouge balaie la plaque et libère le texte en repartant. C'est le
+   vocabulaire du graphisme de diffusion sportive croisé avec la fiche
+   technique produit — le maillot devient un objet documenté.
+   --t est la progression d'entrée du repère, posée par js/main.js. */
+.story__item::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  height: 1.5px;
+  background: var(--red);
+  width: calc(var(--t, 0) * 46px);
+  /* Le trait pointe VERS le maillot, donc vers le centre : à droite pour un
+     repère de gauche, à gauche pour un repère de droite. Dans l'autre sens
+     il désignait le bord de l'écran. */
+  left: 100%;
+  margin-left: 10px;
+  pointer-events: none;
+}
+.story__item--right::before { left: auto; right: 100%; margin: 0 10px 0 0; }
+.story__item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--red);
+  border-radius: inherit;
+  transform: scaleX(var(--v, 0));
+  transform-origin: left center;
+  pointer-events: none;
+}
+.story__item--right::after { transform-origin: right center; }
+.story__item > * { position: relative; z-index: 1; }
+
 .story__item {
   position: absolute;
   /* 46% par defaut ; js/main.js abaisse cette valeur quand le bloc situe
@@ -666,20 +699,40 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .rotation-meter__deg { min-width: 44px; text-align: left; }
 
+/* La jauge se lit comme un cadran, pas comme une barre de progression :
+   un cran tous les 10 degrés, et un curseur rouge qui parcourt la
+   graduation. Les crans déjà parcourus passent au rouge. */
 .rotation-meter__line {
   position: relative;
-  width: 120px;
-  height: 2px;
-  background: var(--line);
-  overflow: hidden;
+  width: 150px;
+  height: 12px;
+  background-image: repeating-linear-gradient(90deg,
+    var(--line-strong) 0 1px, transparent 1px 10px);
+  background-size: 100% 6px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .rotation-meter__line i {
   position: absolute;
   inset: 0;
+  background-image: repeating-linear-gradient(90deg,
+    var(--red) 0 1px, transparent 1px 10px);
+  background-size: 100% 6px;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* découpe, et non mise à l'échelle : étirer déformerait la graduation */
+  clip-path: inset(0 100% 0 0);
+  will-change: clip-path;
+}
+/* Le curseur : c'est de lui que part la traînée de fin de héro. */
+.rotation-meter__line::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: var(--p, 0%);
+  width: 2px;
+  margin-left: -1px;
   background: var(--red);
-  transform-origin: left;
-  transform: scaleX(0);
-  will-change: transform;
 }
 
 /* ---- Bottom-right media card (phone-style frame) ---- */
@@ -792,6 +845,19 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* Le tiret n'a de sens que sur une seule ligne — il est porté par le libellé
    et disparaît avec l'empilement. */
 .outro__sponsor-label::after { content: '—'; margin-left: .7em; opacity: .55; }
+
+/* La coupure de fin de héro : une traînée qui part du curseur de la jauge.
+   Le découpage s'ouvre depuis un POINT — la position réelle du curseur,
+   calculée par js/main.js — d'abord à l'horizontale, puis en hauteur. */
+.hero-cut {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  background: var(--red);
+  clip-path: inset(100% 100% 0 0);
+  pointer-events: none;
+  will-change: clip-path;
+}
 
 /* ==========================================================================
    Load-in choreography
@@ -983,7 +1049,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
        fait une trentaine de pixels. */
     top: auto;
     bottom: var(--story-bottom, 32%);
-    max-width: 64%;
+    max-width: 82%;
     text-align: left;
     display: flex;
     align-items: baseline;
@@ -1014,7 +1080,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     backdrop-filter: blur(7px);
   }
   .story__kicker { padding-bottom: 3px; margin-bottom: 4px; font-size: 11px; }
-  .story__title  { font-size: 12.5px; line-height: 1.15; }
+  .story__title  { font-size: 11.5px; line-height: 1.15; letter-spacing: .1em; }
+  /* Le trait de repère désigne le maillot depuis le côté : sur téléphone il
+     n'y a pas de côté, la légende est sous le maillot. Il flotterait dans le
+     vide. */
+  .story__item::before { display: none; }
   .story__text   { display: none; }      /* one line only at this size */
 
   /* Le nom du sponsor passe sous son libellé, centré, comme sur desktop
