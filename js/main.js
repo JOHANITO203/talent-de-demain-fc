@@ -198,21 +198,26 @@
     sticky.style.setProperty('--meter-touch', (restFromBottom + 4) + 'px');
   }
 
-  /* Sur mobile, les barres du navigateur se rétractent au défilement et la
-     hauteur de fenêtre change de ~90px. Comme la mise en page du héro est
-     mesurée, elle se recalculait en pleine course : mesuré sur l'écran du
-     client, le maillot sautait de 193 à 278px — 85px, 9 points de %, pendant
-     qu'il faisait défiler.
-     On ignore donc les variations de hauteur inférieures à ce seuil. Une
-     rotation d'écran ou un vrai redimensionnement changent la largeur, ou
-     dépassent le seuil : ceux-là recalculent. */
+  /* Les barres du navigateur se rétractent au défilement : la hauteur de
+     fenêtre change, et la mise en page mesurée doit suivre.
+     J'ai d'abord GELÉ le recalcul au-delà d'un seuil, pour éviter que le
+     maillot ne saute. C'était pire : la composition restait accrochée à la
+     géométrie du petit écran pendant que le bloc de texte, lui, suivait la
+     nouvelle hauteur — un grand vide s'ouvrait entre le compteur et le
+     texte, et le maillot sortait par le haut.
+     Le recalcul est donc rétabli, avec deux garde-fous : un simple filtre de
+     bruit (moins de 24px, on ignore), et une transition CSS sur la hauteur
+     et l'ancrage du maillot pour que l'ajustement se pose au lieu de
+     claquer. Le déclenchement passe par tick(), pas par l'événement
+     'resize' : sur mobile, rétracter la barre d'adresse ne le déclenche pas
+     toujours. */
   var dernierH = 0, dernierW = 0;
 
   function syncHeroLayout(force) {
     if (!sticky) return;
     var vh = window.innerHeight;
     if (!force && dernierW === window.innerWidth
-        && Math.abs(vh - dernierH) < 130 && dernierH) return;
+        && Math.abs(vh - dernierH) < 24 && dernierH) return;
     dernierH = vh; dernierW = window.innerWidth;
 
     // clear any value we set before measuring, or we would measure our own
@@ -625,6 +630,7 @@
      spin ends. The turn is seamless (last frame ≈ first frame), so landing
      back on 0 is invisible. Any scroll cancels it, and the rotation then
      sweeps smoothly to the scroll position instead of jumping. */
+  var recalcTimer = 0;      // recalcul différé après un changement de hauteur
   var wasOverHero = null;   // dernier état connu, pour ne toucher au DOM qu'au changement
   var lastNow = 0;   // horloge du lissage (voir tick)
   var frames = 0;    // compteur d'images, lu par la sonde ?diag=1
@@ -656,6 +662,14 @@
        au même endroit que lui, sinon elle garde son gris clair au-dessus de
        la section finale, sombre — visible en bas de page, où il reste ~84px
        de héro que la hauteur de la page ne permet pas de faire sortir. */
+    /* La hauteur de fenêtre a-t-elle bougé ? On le constate ici, dans la
+       boucle, plutôt que d'attendre un événement 'resize' que le navigateur
+       ne délivre pas toujours quand ses barres se rétractent. */
+    if (Math.abs(window.innerHeight - dernierH) >= 24) {
+      clearTimeout(recalcTimer);
+      recalcTimer = setTimeout(function () { syncHeroLayout(true); }, 90);
+    }
+
     var overHero = track.getBoundingClientRect().bottom > navH + 170;
     if (overHero !== wasOverHero) {
       wasOverHero = overHero;

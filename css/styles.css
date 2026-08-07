@@ -1013,7 +1013,15 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
      Le recouvrement que cela visait était celui des BOÎTES, largement
      transparent — pas des pixels visibles. */
   .hero-sticky { --jersey-h: 40vh; --jersey-bottom: 31vh; }
-  .jersey { height: var(--jersey-h); bottom: var(--jersey-bottom); }
+  /* Quand les barres du navigateur se rétractent, la hauteur de fenêtre
+     change et la composition se recalcule. Sans transition, l'ajustement
+     claque en plein défilement. Avec, il se pose. Seuls la hauteur et
+     l'ancrage sont concernés : la rotation, elle, est écrite à chaque image
+     et ne doit surtout pas être transitionnée. */
+  .jersey { height: var(--jersey-h); bottom: var(--jersey-bottom);
+            transition: height .34s var(--ease-out-expo),
+                        bottom .34s var(--ease-out-expo); }
+  .rotation-meter, .story__item { transition: bottom .34s var(--ease-out-expo); }
 
   .hero-copy {
     max-width: none;
@@ -1208,6 +1216,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
    Reduced motion — static jersey frame, no scrub
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
+  .jersey, .rotation-meter, .story__item { transition: none; }
   html { scroll-behavior: auto; }
   /* La piste de défilement et l'épinglage sont CONSERVÉS.
      Ils étaient supprimés ici (height:auto + position:relative), ce qui
