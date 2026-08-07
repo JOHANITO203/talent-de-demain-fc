@@ -87,16 +87,10 @@
   /* Runtime copy in the active language (see js/i18n.js) */
   var T = (window.TDD_I18N && window.TDD_I18N.t) || { scroll: 'Scroll', rotation: 'Rotation' };
 
-  /* Horizontal placement of the jersey: centred everywhere except on a phone
-     held sideways, where the hero lays out side by side (see styles.css).
-     Resolved here in JS so the transform string stays plain CSS. */
-  var landscapeHero = window.matchMedia(
-    '(max-width: 950px) and (max-height: 520px) and (orientation: landscape)');
-  var jerseyX = landscapeHero.matches ? '0px' : '-50%';
-  function syncJerseyX() { jerseyX = landscapeHero.matches ? '0px' : '-50%'; }
-  if (landscapeHero.addEventListener) landscapeHero.addEventListener('change', syncJerseyX);
-  else if (landscapeHero.addListener) landscapeHero.addListener(syncJerseyX);   // older Safari
-  window.addEventListener('resize', syncJerseyX);
+  /* La position horizontale du maillot n'est plus l'affaire du JS : la bande
+     .jersey est pleine largeur et centre son canvas par le flux (styles.css).
+     Le cas du téléphone couché y est traité par justify-content, sans
+     pourcentage ni requête média dupliquée ici. */
 
   /* ---- Hero collision guard -----------------------------------------------
      Every piece of the hero is absolutely positioned with its own fixed
@@ -121,8 +115,38 @@
     return el.getBoundingClientRect().top;
   }
 
+  /* Sur écran empilé (≤900px) le maillot doit tenir DANS la bande libre entre
+     le bas du grand titre et le haut du bloc de texte. Cette bande dépend de
+     la langue et de la hauteur d'écran, et les deux approches purement CSS
+     ont échoué : une hauteur fixe en vh la débordait (le maillot masquait
+     « FOOTBALL » en 375x667), et l'ancrer au seul bloc de texte l'expulsait
+     hors de l'écran en haut sur un téléphone réel. On mesure donc la bande,
+     et le maillot s'y inscrit — il ne peut plus en sortir par construction.
+     Géométrie de mise en page (offset*), jamais les rectangles : le titre
+     porte une échelle qui varie à chaque image du défilement. */
+  var titleEl = document.querySelector('.hero-title');
+  var stacked = window.matchMedia('(max-width: 900px)');
+
+  function syncJerseyBand() {
+    if (!stacked.matches) {                 // desktop : le CSS garde la main
+      sticky.style.removeProperty('--jersey-h');
+      sticky.style.removeProperty('--jersey-bottom');
+      return;
+    }
+    if (!titleEl || !copyEl) return;
+    var vh = window.innerHeight;
+    var sTop = sticky.getBoundingClientRect().top;
+    var bandTop = sTop + titleEl.offsetTop + titleEl.offsetHeight + 6;
+    var bandBottom = sTop + copyEl.offsetTop - 8;
+    var band = bandBottom - bandTop;
+    if (band < 90) return;                  // trop serré : on laisse le CSS
+    sticky.style.setProperty('--jersey-h', Math.min(vh * 0.42, band) + 'px');
+    sticky.style.setProperty('--jersey-bottom', (vh - bandBottom) + 'px');
+  }
+
   function syncHeroLayout() {
     if (!sticky) return;
+    syncJerseyBand();
     var vh = window.innerHeight;
 
     // clear any value we set before measuring, or we would measure our own
@@ -551,13 +575,13 @@
       // rotation advances (origin at the hem, so it rises over the
       // receding headline instead of sinking below the fold).
       // `rise` only differs from 0 during the load-in settle.
-      // Literal offset, never var(). Some mobile browsers fail to parse a
-      // custom property inside a transform function and then drop the WHOLE
-      // transform — the jersey lost its -50% and sat half a width to the
-      // right. Seen on a real phone; desktop emulation centred it correctly.
+      // NO horizontal component here any more. Centring used to ride in this
+      // string as translateX(-50%), and it kept failing on real phones — the
+      // jersey sat half a width to the right, twice, while every emulator
+      // centred it. It is now done by the flex band in styles.css, where no
+      // percentage has to resolve against a width derived from aspect-ratio.
       jersey.style.transform =
-        'translateX(' + jerseyX + ') translateY(' + rise.toFixed(1) + 'px)' +
-        ' scale(' + (1 + smooth * 0.2) + ')';
+        'translateY(' + rise.toFixed(1) + 'px) scale(' + (1 + smooth * 0.2) + ')';
     }
     if (progress) {
       progress.style.transform = 'scaleY(' + smooth + ')';
@@ -652,5 +676,34 @@
     }());
   } else {
     bootVideo();
+  }
+
+  /* ---- Sonde d'appareil (?diag=1) -----------------------------------------
+     Le héro a échoué deux fois sur un téléphone réel sans qu'aucune émulation
+     ne le reproduise. Cette sonde affiche les valeurs telles que L'APPAREIL
+     les calcule : une capture d'écran suffit alors à trancher au lieu de
+     supposer. Totalement inerte sans le paramètre. */
+  if (/[?&]diag=1/.test(location.search)) {
+    var probe = document.createElement('pre');
+    probe.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:9999;' +
+      'margin:0;padding:7px;font:11px/1.4 monospace;white-space:pre-wrap;' +
+      'background:rgba(0,0,0,.85);color:#3f6;pointer-events:none';
+    document.body.appendChild(probe);
+    setInterval(function () {
+      var b = jersey.getBoundingClientRect();
+      var c = canvas.getBoundingClientRect();
+      probe.textContent =
+        'ecran ' + window.innerWidth + 'x' + window.innerHeight +
+          ' dpr' + (window.devicePixelRatio || 1) +
+          '  source=' + (frameSrc ? 'images ' + Math.round(frameSrc.progress() * 100) + '%'
+                                  : 'video') + '\n' +
+        'bande  ' + Math.round(b.left) + '..' + Math.round(b.right) + '\n' +
+        'maillot ' + Math.round(c.left) + '..' + Math.round(c.right) +
+          '   centre ' + Math.round((c.left + c.right) / 2) +
+          ' / attendu ' + Math.round(window.innerWidth / 2) + '\n' +
+        'haut ' + Math.round(c.top) + '  bas ' + Math.round(c.bottom) +
+          '   rotation ' + Math.round(vSmooth * 360) + 'deg' +
+          '   defilement ' + Math.round(target * 100) + '%';
+    }, 300);
   }
 })();
