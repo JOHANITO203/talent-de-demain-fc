@@ -646,11 +646,19 @@
     booted = true;
     drawFrame();    // paint the first frame immediately
     if (!frameSrc) primeDecoder(); // …wake the decoder so seeks yield frames
-    if (reducedMotion && !hasOverride) return; // a11y: static frame, no scrub
     readScroll();
+    /* prefers-reduced-motion ne coupe PLUS la boucle de rendu.
+       Ce réglage vise le mouvement subi — une animation qui se joue toute
+       seule. La rotation du maillot ne bouge que si le visiteur fait défiler :
+       elle est pilotée, pas subie. Couper la boucle figeait le héro entier, et
+       comme l'économiseur de batterie Android active ce réglage, un visiteur à
+       4% de batterie n'avait tout simplement plus d'expérience — constaté en
+       QA sur l'appareil du client, symptôme reproduit puis vérifié en ligne.
+       Seule l'intro qui tourne d'elle-même reste supprimée, ci-dessous : c'est
+       le seul mouvement involontaire du héro. */
     // Autoplay the reveal spin only from the top of the page (a reload
     // restored mid-scroll keeps the scroll-driven position instead).
-    if (!hasOverride && window.pageYOffset < 4) {
+    if (!hasOverride && !reducedMotion && window.pageYOffset < 4) {
       introActive = true;
       introT0 = -1;
     }

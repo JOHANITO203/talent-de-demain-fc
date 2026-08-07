@@ -902,6 +902,19 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .hero-track { height: auto; }
-  .hero-sticky { position: relative; }
+  /* La piste de défilement et l'épinglage sont CONSERVÉS.
+     Ils étaient supprimés ici (height:auto + position:relative), ce qui
+     ramenait la course à zéro : js/main.js calcule sa progression comme
+     hauteur_de_piste − hauteur_d_écran, donc elle restait bloquée à 0 et le
+     maillot ne tournait jamais, quoi qu'on fasse côté JS.
+     Or l'économiseur de batterie Android active ce réglage : un visiteur à
+     4% de batterie perdait purement et simplement le héro. Constaté en QA
+     sur l'appareil du client, reproduit puis vérifié en ligne.
+     Le réglage vise le mouvement SUBI : ici la rotation est pilotée par le
+     visiteur, elle ne bouge que s'il défile.
+     La course garde donc sa longueur normale : la raccourcir donnerait PLUS
+     de mouvement par cran de défilement, soit l'inverse du but recherché.
+     Ce réglage ne supprime plus ici que le défilement fluide ; les
+     transitions d'entrée sont neutralisées plus haut, et l'intro qui tourne
+     toute seule l'est dans js/main.js. */
 }
