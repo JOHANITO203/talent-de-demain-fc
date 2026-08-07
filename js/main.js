@@ -264,21 +264,10 @@
   var FRAG =
     'precision mediump float;' +
     'uniform sampler2D uTex;' +
-    'uniform sampler2D uTex2;' + // image suivante de la séquence
-    'uniform float uMix;' +      // 0 = uTex seule (chemin vidéo / desktop)
     'uniform vec2 uTexel;' +   // 1 / video resolution, for the sharpen taps
     'varying vec2 vUv;' +
     'void main(){' +
     '  vec3 c = texture2D(uTex, vUv).rgb;' +
-       /* Fondu vers l'image suivante. La séquence compte 193 pas pour 360°,
-          soit une image tous les ~10px de défilement : au doigt lent la
-          rotation n'avançait qu'à ~14 images/s pendant que la page en faisait
-          60, d'où un ressenti moins fluide que sur desktop. Interpoler rend
-          la rotation continue entre deux pas.
-          Les prises de netteté ci-dessous restent sur uTex : l'écart entre
-          deux images voisines est de 1,87°, l'erreur est invisible et cela
-          épargne quatre lectures de texture par pixel sur téléphone. */
-    '  if (uMix > 0.004) c = mix(c, texture2D(uTex2, vUv).rgb, uMix);' +
        // 5-tap unsharp mask at display time: crisper fabric and crest.
        // The keying below uses the UNsharpened color so edge halos never
        // disturb the backdrop estimate.
@@ -322,8 +311,7 @@
     '  gl_FragColor = vec4(cSharp * alpha, alpha);' +
     '}';
 
-  var gl = null, glTex = null, glTex2 = null, glTexelLoc = null, glMixLoc = null;
-  var glTexLoc = null, glTex2Loc = null;   // unités échangées par bindPair
+  var gl = null, glTex = null, glTexelLoc = null;
 
   function initWebGL() {
     gl = canvas.getContext('webgl', {
@@ -368,25 +356,7 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-    glTexLoc = gl.getUniformLocation(prog, 'uTex');
-    gl.uniform1i(glTexLoc, 0);
-
-    // Seconde texture : l'image suivante de la séquence, pour l'interpolation.
-    // Inutilisée sur le chemin vidéo, où uMix reste à 0.
-    glTex2 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, glTex2);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    glTex2Loc = gl.getUniformLocation(prog, 'uTex2');
-    gl.uniform1i(glTex2Loc, 1);
-    gl.activeTexture(gl.TEXTURE0);
-
-    glMixLoc = gl.getUniformLocation(prog, 'uMix');
-    gl.uniform1f(glMixLoc, 0);
-
+    gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
     glTexelLoc = gl.getUniformLocation(prog, 'uTexel');
     gl.uniform2f(glTexelLoc, 1 / 900, 1 / 1080); // updated once metadata loads
     return true;
@@ -427,75 +397,32 @@
       canvas.width  = w;
       canvas.height = h;
       if (gl) gl.viewport(0, 0, w, h);
-      lastPainted = lastPainted2 = null; lastMix = -1; // force le repaint
+      lastPainted = null; // force the repaint below through the skip guard
       drawFrame(); // repaint at the new size
     }
   }
 
   /* ---- Painting --------------------------------------------------------- */
-  // Chemin séquence : dernières images ENVOYÉES au GPU. Le téléversement d'une
-  // texture 900×1080 est cher ; la pondération, elle, est un simple uniform,
-  // donc on redessine à chaque image sans rien re-téléverser.
-  var lastPainted = null, lastPainted2 = null, lastMix = -1;
-
-  /* Les deux textures fonctionnent en va-et-vient. Quand la rotation avance
-     d'un cran, la nouvelle image A est exactement l'ancienne image B : on
-     permute les unités au lieu de la re-téléverser. Sans cette permutation le
-     fondu doublait le coût de téléversement, et la cadence tombait de moitié
-     (mesuré 6 → 3 im/s sur processeur bridé). Avec, on reste à un seul envoi
-     de texture par changement d'image, comme avant l'interpolation. */
-  var slotImg = [null, null];   // image présente dans chaque unité de texture
-
-  function uploadSlot(slot, img) {
-    gl.activeTexture(slot ? gl.TEXTURE1 : gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, slot ? glTex2 : glTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-    slotImg[slot] = img;
-  }
-
-  function bindPair(a, b) {
-    var ia = slotImg[0] === a ? 0 : (slotImg[1] === a ? 1 : -1);
-    var ib = slotImg[0] === b ? 0 : (slotImg[1] === b ? 1 : -1);
-    if (ia < 0) { ia = (ib === 0) ? 1 : 0; uploadSlot(ia, a); }
-    if (ib < 0) { ib = (ia === 0) ? 1 : 0; uploadSlot(ib, b); }
-    if (glTexLoc)  gl.uniform1i(glTexLoc, ia);
-    if (glTex2Loc) gl.uniform1i(glTex2Loc, ib);
-    gl.activeTexture(gl.TEXTURE0);
-  }
+  var lastPainted = null; // sequence path only: last image uploaded to the GPU
 
   function drawFrame() {
+    var pixels = video;
     if (frameSrc) {
-      var pair = frameSrc.framesAt(vSmooth);
-      if (!pair) return;
-      if (!blendOn && pair.mix > 0) {          // appareil sans marge : plus proche
-        var n = pair.mix < 0.5 ? pair.a : pair.b;
-        pair = { a: n, b: n, mix: 0 };
-      }
-      if (pair.a === lastPainted && pair.b === lastPainted2 &&
-          Math.abs(pair.mix - lastMix) < 0.004) return;   // rien de neuf
-
-      if (gl) {
-        bindPair(pair.a, pair.b);
-        if (glMixLoc) gl.uniform1f(glMixLoc, pair.mix);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      } else if (ctx2d) {
-        // Repli sans WebGL : pas de fondu possible à coût raisonnable ici,
-        // on affiche l'image la plus proche.
-        ctx2d.drawImage(pair.mix < 0.5 ? pair.a : pair.b,
-                        0, 0, canvas.width, canvas.height);
-      }
-      lastPainted = pair.a; lastPainted2 = pair.b; lastMix = pair.mix;
-      return;
+      // tick() runs every rAF, but the chosen image only changes when the
+      // scroll actually moves. Re-uploading a 900×1080 texture 60 times a
+      // second would drain a phone for nothing.
+      pixels = frameSrc.frameAt(vSmooth);
+      if (!pixels || pixels === lastPainted) return;
+      lastPainted = pixels;
+    } else if (video.readyState < 2) {
+      return; // no decodable frame yet
     }
-
-    if (video.readyState < 2) return; // no decodable frame yet
     if (gl) {
-      gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, glTex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     } else if (ctx2d) {
-      ctx2d.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx2d.drawImage(pixels, 0, 0, canvas.width, canvas.height);
     }
   }
 
@@ -598,8 +525,6 @@
      spin ends. The turn is seamless (last frame ≈ first frame), so landing
      back on 0 is invisible. Any scroll cancels it, and the rotation then
      sweeps smoothly to the scroll position instead of jumping. */
-  var blendOn = true;   // interpolation entre images (voir tick)
-  var slowFrames = 0;
   var lastNow = 0;   // horloge du lissage (voir tick)
   var frames = 0;    // compteur d'images, lu par la sonde ?diag=1
 
@@ -639,18 +564,6 @@
        geste — et on relâche quand il est grand, ce qui conserve exactement le
        glissé actuel sur les grands mouvements. */
     var gap = Math.abs(target - vSmooth);
-
-    /* Garde-fou de performance. Le fondu entre images coûte une lecture de
-       texture de plus par pixel. Sur un appareil sans marge, une rotation par
-       paliers mais fluide vaut mieux qu'une rotation interpolée saccadée —
-       et je ne peux pas mesurer le GPU du visiteur depuis ici. L'appareil
-       tranche donc lui-même : si la cadence décroche pendant que la rotation
-       travaille, on cesse d'interpoler. Sans retour arrière, pour ne pas
-       osciller à la frontière. */
-    if (blendOn && gap > 0.0005) {
-      if (dt > 24) { if (++slowFrames > 45) blendOn = false; }
-      else if (slowFrames > 0) slowFrames--;
-    }
     var snap = 0.42 - 0.28 * Math.min(1, gap * 14);   // 0.42 tout près → 0.14 loin
     var k = 1 - Math.pow(1 - snap, dt / 16.7);
 
@@ -848,8 +761,7 @@
           '..' + track.offsetHeight +
           '  course ' + Math.round(track.offsetHeight - window.innerHeight) +
           '   ' + fps + ' im/s\n' +
-        'fondu ' + (blendOn ? 'actif' : 'DESACTIVE (cadence)') +
-          '   mouvement reduit : ' + (reducedMotion ? 'OUI' : 'non') +
+        'mouvement reduit : ' + (reducedMotion ? 'OUI' : 'non') +
           '   webgl ' + (gl ? 'oui' : 'NON') +
           '   piste css ' + Math.round(track.offsetHeight / window.innerHeight * 100) + 'vh';
     }, 300);
