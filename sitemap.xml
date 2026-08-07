@@ -6,22 +6,22 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://talentdedemainfc.com/squads.html</loc>
+    <loc>https://talentdedemainfc.com/squads</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://talentdedemainfc.com/academy.html</loc>
+    <loc>https://talentdedemainfc.com/academy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://talentdedemainfc.com/events.html</loc>
+    <loc>https://talentdedemainfc.com/events</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://talentdedemainfc.com/community.html</loc>
+    <loc>https://talentdedemainfc.com/community</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
