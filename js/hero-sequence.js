@@ -113,6 +113,23 @@
         if (want + d < COUNT && done[want + d]) return imgs[want + d];
       }
       return null;
+    },
+
+    /* Les DEUX images encadrant la progression, plus leur pondération, pour
+       que le rendu interpole au lieu de sauter d'un pas à l'autre. 193 images
+       pour 360° font un pas tous les ~10px de défilement : au doigt lent la
+       rotation n'avançait qu'à ~14 images/s.
+       On n'interpole que si les deux voisines immédiates sont chargées —
+       pendant la seconde vague, mélanger deux images éloignées produirait un
+       dédoublement. Sinon on retombe proprement sur l'image la plus proche. */
+    framesAt: function (p) {
+      if (!(p >= 0)) p = 0; else if (p > 1) p = 1;
+      var x = p * (COUNT - 1);
+      var i = Math.floor(x);
+      var j = Math.min(i + 1, COUNT - 1);
+      if (done[i] && done[j]) return { a: imgs[i], b: imgs[j], mix: x - i };
+      var near = SRC.frameAt(p);
+      return near ? { a: near, b: near, mix: 0 } : null;
     }
   };
 
