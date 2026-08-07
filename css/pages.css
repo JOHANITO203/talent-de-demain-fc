@@ -130,10 +130,10 @@
   scroll-snap-type: x mandatory;
   border-radius: 18px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(16,16,16,.35) transparent;
+  scrollbar-color: var(--line-strong) transparent;
 }
 .gallery::-webkit-scrollbar { height: 6px; }
-.gallery::-webkit-scrollbar-thumb { background: rgba(16,16,16,.28); border-radius: 3px; }
+.gallery::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
 
 .gallery figure {
   position: relative;
@@ -158,7 +158,7 @@
   padding: 6px 12px;
   border-radius: 8px;
   background: rgba(13,13,13,.72);
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: .12em;
@@ -170,8 +170,8 @@
 /* Rating card — dark panel, chamfered corner, club colors */
 .rating-card {
   position: relative;
-  background: var(--card);
-  color: var(--white);
+  background: var(--panel);
+  color: var(--on-dark);
   border-radius: 18px;
   padding: clamp(22px, 2.4vw, 34px);
   clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 0 100%);
@@ -372,8 +372,8 @@
 .duo__media img { width: 100%; height: 100%; object-fit: cover; }
 
 .panel {
-  background: var(--card);
-  color: var(--white);
+  background: var(--panel);
+  color: var(--on-dark);
   border-radius: 18px;
   clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 0 100%);
   padding: clamp(22px, 2.4vw, 34px);
@@ -403,8 +403,8 @@
 }
 
 .match-card {
-  background: var(--card);
-  color: var(--white);
+  background: var(--panel);
+  color: var(--on-dark);
   border-radius: 18px;
   overflow: hidden;
   clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
@@ -430,7 +430,7 @@
   top: 12px; left: 12px;
   padding: 6px 11px;
   background: var(--red);
-  color: var(--white);
+  color: var(--on-dark);
   border-radius: 7px;
   font-family: var(--font-display);
   font-weight: 600;
@@ -464,8 +464,8 @@
   position: relative;
   margin: clamp(36px, 7vh, 84px) 0;
   padding: clamp(44px, 8vh, 96px) var(--gutter);
-  background: var(--ink);
-  color: var(--white);
+  background: var(--band);
+  color: var(--on-dark);
   overflow: hidden;
 }
 .film::before {                 /* blurred still of the footage as the stage */
@@ -494,14 +494,14 @@
   align-items: center;
 }
 
-.film__copy .section__title { color: var(--white); }
+.film__copy .section__title { color: var(--on-dark); }
 .film__copy p { margin-top: 14px; max-width: 420px; font-size: 15px; font-weight: 500; line-height: 1.6; color: rgba(255,255,255,.72); }
 
 .film__frame {
   position: relative;
   height: min(74vh, 640px);
   aspect-ratio: 9 / 16;
-  background: var(--card);
+  background: var(--panel);
   border-radius: 28px;
   padding: 10px;                 /* phone-style bezel, same motif as the
                                     landing media card */
@@ -523,7 +523,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(240,239,237,.92);
+  background: var(--glass);
   color: var(--ink);
   display: flex;
   align-items: center;
@@ -553,8 +553,8 @@
   border-radius: 18px;
   overflow: hidden;
   clip-path: polygon(0 0, calc(100% - 44px) 0, 100% 44px, 100% 100%, 0 100%);
-  background: var(--card);
-  color: var(--white);
+  background: var(--panel);
+  color: var(--on-dark);
   display: flex;
   align-items: flex-end;
 }
@@ -653,20 +653,20 @@
   align-items: center;
   /* the CTA carries the shared .btn top margin — cancel it so the three
      columns share one centre line */
-  background: var(--white);
-  border: 1px solid rgba(16,16,16,.1);
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 16px;
   padding: 18px 22px;
   transition: transform .3s ease, box-shadow .3s ease;
 }
 .event-card .btn { margin-top: 0; }
-.event-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(16,16,16,.1); }
+.event-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px var(--line); }
 .event-card + .event-card { margin-top: 14px; }
 
 .event-card__date {
   text-align: center;
-  background: var(--ink);
-  color: var(--white);
+  background: var(--band);
+  color: var(--on-dark);
   border-radius: 12px;
   padding: 10px 8px;
 }
@@ -710,7 +710,7 @@
   left: 0; right: 0; bottom: 0;
   padding: 26px 14px 12px;
   background: linear-gradient(transparent, rgba(13,13,13,.78));
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: .08em;
@@ -735,7 +735,7 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  background: var(--card);
+  background: var(--panel);
   /* uniform card height; the poster is letterboxed inside, never cropped */
   aspect-ratio: 4 / 5;
   display: flex;
@@ -757,7 +757,7 @@
   left: 0; right: 0; bottom: 0;
   padding: 30px 16px 14px;
   background: linear-gradient(transparent, rgba(13, 13, 13, .85));
-  color: var(--white);
+  color: var(--on-dark);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: .1em;
@@ -772,8 +772,8 @@
 }
 
 .social-card {
-  background: var(--card);
-  color: var(--white);
+  background: var(--panel);
+  color: var(--on-dark);
   border-radius: 16px;
   clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
   padding: 22px;
@@ -809,8 +809,8 @@
 .link-list a::after { content: "→"; color: var(--red); padding-left: 16px; }
 
 .contact-panel {
-  background: var(--card);
-  color: var(--white);
+  background: var(--panel);
+  color: var(--on-dark);
   border-radius: 18px;
   clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 0 100%);
   padding: clamp(24px, 3vw, 40px);
@@ -827,7 +827,7 @@
   color: var(--red);
   margin-bottom: 8px;
 }
-.contact-panel p, .contact-panel a { font-size: 15px; font-weight: 600; color: var(--white); line-height: 1.5; }
+.contact-panel p, .contact-panel a { font-size: 15px; font-weight: 600; color: var(--on-dark); line-height: 1.5; }
 /* inline links were 19px tall — too small to tap reliably */
 .contact-panel a { display: inline-block; padding: 6px 0; }
 .contact-panel a:hover { color: var(--red); }
@@ -845,8 +845,8 @@
 }
 
 .join__form {
-  background: var(--card);
-  color: var(--white);
+  background: var(--panel);
+  color: var(--on-dark);
   border-radius: 18px;
   clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 0 100%);
   padding: clamp(24px, 3vw, 40px);
@@ -878,7 +878,7 @@
   font-family: var(--font-ui);
   font-size: 15px;
   font-weight: 500;
-  color: var(--white);
+  color: var(--on-dark);
   background: rgba(255, 255, 255, .06);
   border: 1px solid rgba(255, 255, 255, .16);
   border-radius: 10px;
@@ -918,7 +918,7 @@
   display: inline-block;
   padding: 16px 30px;
   background: var(--red);
-  color: var(--white);
+  color: var(--on-dark);
   border: 0;
   border-radius: 10px;
   font-family: var(--font-ui);
@@ -968,7 +968,7 @@
   padding: 17px 20px;
   border-radius: 14px;
   background: #1f9d55;
-  color: var(--white);
+  color: var(--on-dark);
   transition: transform .25s ease;
 }
 .whatsapp:hover { transform: translateY(-3px); }
@@ -982,8 +982,8 @@
 
 /* ---------- Compact footer -------------------------------------------------- */
 .page-footer {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--band);
+  color: var(--on-dark);
   margin-top: clamp(36px, 7vh, 84px);
   padding: 42px var(--gutter);
   display: flex;
@@ -1015,7 +1015,7 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, .45);
 }
-.page-footer__sponsor strong { color: var(--white); letter-spacing: .16em; }
+.page-footer__sponsor strong { color: var(--on-dark); letter-spacing: .16em; }
 /* wrap: five links on one forced line were 411px wide and pushed a 390px
    phone into horizontal scroll */
 .page-footer nav {

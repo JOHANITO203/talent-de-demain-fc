@@ -49,21 +49,84 @@
   /* Video → page blending: lifts the clip's beige studio backdrop
      (~#C6C0BB) to white so `multiply` makes it vanish into --bg. */
   --jersey-filter: brightness(1.32) contrast(1.04) saturate(1.05);
+
+  /* ---- Surfaces -----------------------------------------------------------
+     Ces jetons ne changent pas de RÔLE d'un thème à l'autre, seulement de
+     valeur. C'est la distinction qui manquait : --ink servait à la fois de
+     couleur de texte sur la page ET de fond pour les cartes sombres. En
+     thème sombre la première doit s'inverser, la seconde non — sinon une
+     carte noire devient blanche. */
+  --panel: #0D0D0D;         /* carte sombre posée sur la page               */
+  --on-dark: #ffffff;       /* texte sur toute surface sombre               */
+  --band: #101010;          /* bande pleine largeur inversée (outro, film)  */
+  --surface: #ffffff;       /* carte claire (event-card)                    */
+  --btn-bg: #101010;
+  --btn-ink: #ffffff;
+  --btn-alt-bg: #ffffff;    /* bouton posé DANS une bande inversée          */
+  --btn-alt-ink: #101010;
+
+  /* Filets, survols et panneaux translucides : ils s'inversent. */
+  --line: rgba(16, 16, 16, .18);
+  --line-strong: rgba(16, 16, 16, .24);
+  --line-soft: rgba(16, 16, 16, .06);
+  --tint: rgba(16, 16, 16, .05);
+  --glass: rgba(240, 239, 237, .86);
+  --glass-strong: rgba(240, 239, 237, .97);
+  --glass-soft: rgba(240, 239, 237, .72);
+}
+
+/* ---------- Thème sombre ---------------------------------------------------
+   Il n'existe pas seulement par confort : sans lui, Samsung Internet et le
+   mode sombre automatique de Chrome inversent la page eux-mêmes, et le
+   résultat est mauvais (fond noir cru, nuances de la charte perdues,
+   détourage du maillot incohérent). Mesuré : déclarer color-scheme: light ne
+   les arrête PAS — c'est cohérent, ils visent justement les pages sans thème
+   sombre. Fournir le thème est le seul moyen de reprendre la main, et c'est
+   vérifié : le navigateur cesse alors d'inverser et applique ces valeurs.
+
+   Le fond n'est pas noir mais un brun très sombre, écho du blanc cassé chaud
+   du thème clair ; le texte n'est pas blanc pur, qui vibre sur fond sombre.
+   Les cartes deviennent plus CLAIRES que la page — en thème clair elles sont
+   sombres sur clair, elles restent donc lisibles comme des surfaces posées. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141211;
+    --ink: #EDEAE6;
+    --ink-soft: #A8A39D;
+    --red: #E2543F;         /* remonté : le rouge d'origine manque de contraste */
+
+    --panel: #211F1C;
+    --on-dark: #F3F1EE;
+    --band: #1C1A18;
+    --surface: #211F1C;
+    --btn-bg: #EDEAE6;
+    --btn-ink: #141211;
+    --btn-alt-bg: #EDEAE6;
+    --btn-alt-ink: #141211;
+
+    --line: rgba(255, 255, 255, .17);
+    --line-strong: rgba(255, 255, 255, .27);
+    --line-soft: rgba(255, 255, 255, .08);
+    --tint: rgba(255, 255, 255, .07);
+    --glass: rgba(26, 24, 22, .86);
+    --glass-strong: rgba(20, 18, 17, .97);
+    --glass-soft: rgba(26, 24, 22, .74);
+  }
 }
 
 /* ---------- Reset / base --------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Le site est conçu en thème clair. Cette déclaration accorde les éléments
-   natifs (ascenseurs, champs de formulaire) au thème.
-   ATTENTION — elle NE protège PAS de l'assombrissement automatique : mesuré,
-   Samsung Internet et le mode sombre de Chrome inversent la page malgré
-   elle, et c'est cohérent avec leur but, qui est justement de traiter les
-   pages sans thème sombre. Dire « je suis clair » leur confirme d'agir.
-   Le seul moyen de reprendre la main est de FOURNIR un thème sombre :
-   vérifié, avec color-scheme: light dark + un bloc prefers-color-scheme,
-   le navigateur cesse d'inverser et applique nos couleurs. À faire. */
-:root { color-scheme: light; }
+/* Le site sait faire les deux thèmes, et le DIT — c'est cette déclaration,
+   pas un choix de confort, qui coupe l'assombrissement sauvage.
+   Mesuré : `color-scheme: light` seul ne protège de rien, Samsung Internet et
+   le mode sombre de Chrome inversent la page malgré lui. C'est cohérent avec
+   leur but, qui est de traiter les pages DÉPOURVUES de thème sombre — leur
+   dire « je suis clair » leur confirme d'agir. Avec `light dark` et le bloc
+   prefers-color-scheme plus haut, ils cessent d'inverser et appliquent nos
+   couleurs : vérifié en posant une teinte témoin, c'est bien la nôtre qui
+   est peinte. Ne pas retirer l'un sans l'autre. */
+:root { color-scheme: light dark; }
 
 html { scroll-behavior: smooth; }
 
@@ -139,7 +202,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .lang-btn {
   min-width: 44px;
   padding: 9px 10px;
-  border: 1px solid rgba(16, 16, 16, .22);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   font-family: var(--font-display);
   font-weight: 600;
@@ -148,7 +211,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: var(--ink);
   transition: border-color .2s ease, background .2s ease;
 }
-.lang-btn:hover { border-color: var(--ink); background: rgba(16, 16, 16, .05); }
+.lang-btn:hover { border-color: var(--ink); background: var(--tint); }
 .nav-open .lang-btn { opacity: 0; pointer-events: none; }
 
 /* ---- Menu panel (built by js/nav.js) ---- */
@@ -166,7 +229,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   justify-content: center;
   gap: clamp(24px, 5vh, 52px);
   padding: calc(var(--nav-h) + 24px) var(--gutter) 40px;
-  background: rgba(240, 239, 237, .97);
+  background: var(--glass-strong);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   opacity: 0;
@@ -220,7 +283,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   justify-content: center;
   width: 46px;
   height: 46px;
-  border: 1px solid rgba(16, 16, 16, .18);
+  border: 1px solid var(--line);
   border-radius: 50%;
   color: var(--ink);
   transition: border-color .2s ease, transform .2s ease;
@@ -399,8 +462,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: inline-block;
   margin-top: 26px;
   padding: 17px 30px;
-  background: var(--ink);
-  color: var(--white);
+  background: var(--btn-bg);
+  color: var(--btn-ink);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: .14em;
@@ -410,9 +473,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(16, 16, 16, .22);
+  box-shadow: 0 12px 28px var(--line-strong);
 }
-.btn--light { background: var(--white); color: var(--ink); }
+.btn--light { background: var(--btn-alt-bg); color: var(--btn-alt-ink); }
 
 /* ---- Scroll-synced story captions (opacity/motion driven by main.js) ---- */
 .story__item {
@@ -473,10 +536,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   /* HUD chip: stays readable when the enlarged jersey passes behind it */
   padding: 9px 16px;
   border-radius: 999px;
-  background: rgba(240, 239, 237, .72);
+  background: var(--glass-soft);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  box-shadow: 0 1px 0 rgba(16, 16, 16, .06);
+  box-shadow: 0 1px 0 var(--line-soft);
 }
 
 .rotation-meter__label,
@@ -495,7 +558,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: relative;
   width: 120px;
   height: 2px;
-  background: rgba(16, 16, 16, .18);
+  background: var(--line);
   overflow: hidden;
 }
 .rotation-meter__line i {
@@ -514,10 +577,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   bottom: clamp(28px, 6vh, 64px);
   z-index: 3;
   width: clamp(240px, 17.5vw, 340px);
-  background: var(--card);
+  background: var(--panel);
   border-radius: 26px;
   padding: 10px;
-  box-shadow: 0 24px 48px rgba(16, 16, 16, .28);
+  box-shadow: 0 24px 48px var(--line-strong);
 }
 
 .media-card__screen {
@@ -548,7 +611,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: 100%;
   height: 100%;
   border-radius: 2px;
-  background: var(--white);
+  background: var(--on-dark);
   transform-origin: top;
   transform: scaleY(0);
   will-change: transform;
@@ -560,8 +623,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .outro {
   position: relative;
   z-index: 4;
-  background: var(--ink);
-  color: var(--white);
+  background: var(--band);
+  color: var(--on-dark);
   min-height: 72vh;
   display: flex;
   flex-direction: column;
@@ -810,7 +873,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .story__item {
     padding: 9px 14px;
     border-radius: 12px;
-    background: rgba(240, 239, 237, .84);
+    background: var(--glass);
     -webkit-backdrop-filter: blur(7px);
     backdrop-filter: blur(7px);
   }

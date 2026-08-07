@@ -83,6 +83,10 @@
   if (!track || !video || !canvas) return;
 
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* Déclaré ici, avant tout usage : la placer plus bas laissait la variable
+     remontée mais non affectée au moment où l'écouteur de thème la lisait,
+     ce qui levait une exception et interrompait tout le moteur du héro. */
+  var darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
   /* Runtime copy in the active language (see js/i18n.js) */
   var T = (window.TDD_I18N && window.TDD_I18N.t) || { scroll: 'Scroll', rotation: 'Rotation' };
@@ -199,6 +203,10 @@
     }
   }
 
+  if (darkScheme.addEventListener) {
+    darkScheme.addEventListener('change', function () { syncHalo(); drawFrame(); });
+  }
+
   window.addEventListener('resize', syncHeroLayout);
   // fonts change the copy block's height, so re-measure once they land
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeroLayout);
@@ -275,6 +283,7 @@
   var FRAG =
     'precision mediump float;' +
     'uniform sampler2D uTex;' +
+    'uniform float uHalo;' +   // intensite du halo studio, 0 en theme sombre
     'uniform vec2 uTexel;' +   // 1 / video resolution, for the sharpen taps
     'varying vec2 vUv;' +
     'void main(){' +
@@ -315,14 +324,18 @@
        // (254) while the page is a warm off-white (240), so a strong halo
        // reads as a bright smear that washes out the headline behind it.
     '  vec2 hd = (vUv - vec2(.5, .52)) * vec2(1., .8);' +
-    '  float halo = (1. - smoothstep(.10, .38, length(hd))) * .18;' +
+    '  float halo = (1. - smoothstep(.10, .38, length(hd))) * uHalo;' +
     '  alpha = max(alpha, halo);' +
        // Premultiplied output (canvas is composited premultiplied);
        // the sharpened color carries the extra detail.
     '  gl_FragColor = vec4(cSharp * alpha, alpha);' +
     '}';
 
-  var gl = null, glTex = null, glTexelLoc = null;
+  var gl = null, glTex = null, glTexelLoc = null, glHaloLoc = null;
+
+  function syncHalo() {
+    if (gl && glHaloLoc) gl.uniform1f(glHaloLoc, darkScheme.matches ? 0 : 0.18);
+  }
 
   function initWebGL() {
     gl = canvas.getContext('webgl', {
@@ -368,6 +381,13 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
     gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
+    /* Le halo garde une part du fond de studio autour du maillot : sur la
+       page claire il restitue la profondeur photographique que le détourage
+       enlève. En thème sombre ce même fond quasi blanc deviendrait une tache
+       lumineuse — on le coupe. */
+    glHaloLoc = gl.getUniformLocation(prog, 'uHalo');
+    syncHalo();
+
     glTexelLoc = gl.getUniformLocation(prog, 'uTexel');
     gl.uniform2f(glTexelLoc, 1 / 900, 1 / 1080); // updated once metadata loads
     return true;
