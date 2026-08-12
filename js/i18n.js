@@ -227,6 +227,19 @@
     'Register Your Interest': 'Je m\'inscris',
     'Trailer for the upcoming detection day': 'Bande-annonce de la prochaine détection',
     'Toggle sound': 'Activer ou couper le son',
+    /* ---- the mini tournament poster ---- */
+    'New Event': 'Nouvel événement',
+    'Mini Tournament': 'Mini-tournoi',
+    'Three clubs, one afternoon of football.': 'Trois clubs, un après-midi de football.',
+    'When': 'Quand',
+    'Where': 'Où',
+    'Who': 'Qui',
+    'Saturday 15 August 2026, from 2 pm': 'Samedi 15 août 2026, dès 14 h 00',
+    /* Le stade et les trois clubs sont des NOMS : ils ne se traduisent pas,
+       et n'ont donc pas de ligne ici. */
+    'Poster for the Mini Tournament on 15 August 2026, Stade de Brofodoumé, from 2 pm — FC Néhémie, Talent de Demain FC and CIAF':
+      'Affiche du Mini-tournoi du 15 août 2026, stade de Brofodoumé, dès 14h00 — FC Néhémie, Talent de Demain FC et CIAF',
+
     'Club Tournament': 'Tournoi du club',
     'Formation A · Details announced on our socials':
       'Formation A · Détails annoncés sur nos réseaux',

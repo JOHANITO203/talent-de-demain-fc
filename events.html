@@ -34,7 +34,7 @@
     try { var _t = localStorage.getItem('tdd-theme');
           if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
   <link rel="stylesheet" href="css/styles.css?v=49">
-  <link rel="stylesheet" href="css/pages.css?v=24">
+  <link rel="stylesheet" href="css/pages.css?v=28">
 
   <!-- ===================== MESURE D'AUDIENCE =====================
        Coller ici le script du service choisi, juste avant </head>.
@@ -87,6 +87,45 @@
         <h2 class="section__title">À venir</h2>
         <span class="section__note">Notez les dates</span>
       </div>
+
+      <!-- ============ NEW EVENT POSTER ============
+           The artwork carries every fact itself — title, date, venue,
+           kick-off and the three crests. Two consequences, and they are the
+           whole design of this block:
+
+             it is never cropped. A poster is typography; a fixed ratio would
+             cut it. It keeps its own ratio inside its frame;
+
+             every fact it carries is repeated as REAL TEXT beside it. An
+             image is not indexed by a search engine, not read aloud by a
+             screen reader, and not there when it fails to load. The text is
+             the record; the poster is the picture of it.
+
+           Nothing here is invented: the date, the hour, the venue and the
+           three clubs are read off the artwork. It sits ABOVE the trailer
+           because it is dated and three days away, while the detection day
+           below still reads "date to confirm". -->
+      <article class="event-poster reveal">
+        <figure class="event-poster__art">
+          <img src="assets/img/poster-mini-tournoi.webp?v=1"
+               alt="Affiche du Mini-tournoi du 15 août 2026, stade de Brofodoumé, dès 14h00 — FC Néhémie, Talent de Demain FC et CIAF"
+               width="1100" height="1971" loading="lazy" decoding="async">
+        </figure>
+
+        <div class="event-poster__body">
+          <p class="page-hero__kicker">Nouvel événement</p>
+          <h3 class="event-poster__title">Mini-tournoi</h3>
+          <p class="event-poster__text">Trois clubs, un après-midi de football.</p>
+
+          <dl class="event-poster__facts">
+            <div><dt>Quand</dt><dd>Samedi 15 août 2026, dès 14 h 00</dd></div>
+            <div><dt>Où</dt><dd>Stade de Brofodoumé</dd></div>
+            <div><dt>Qui</dt><dd>FC Néhémie · Talent de Demain FC · CIAF</dd></div>
+          </dl>
+
+          <a class="btn" href="community.html#join">Nous suivre</a>
+        </div>
+      </article>
 
       <!-- Next event teaser: the trailer plays muted while on screen -->
       <div class="next-event reveal" data-cinema-wrap>

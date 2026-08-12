@@ -645,6 +645,114 @@
   .next-event__body .btn { width: 100%; text-align: center; }
 }
 
+/* ---------- New event poster ------------------------------------------------
+   A poster is artwork with the facts baked into it, so it is never cropped:
+   it keeps its own ratio inside its frame. The facts are repeated as real
+   text on the other column — an image is not indexed, not read aloud, and
+   not there when it fails to load.
+
+   Light card, like .event-card: the poster is loud enough on its own, and a
+   dark panel around it would fight the red.                                */
+.event-poster {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: clamp(18px, 2.6vw, 40px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: clamp(16px, 1.8vw, 24px);
+  margin-bottom: clamp(20px, 3vh, 34px);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.event-poster:hover { transform: translateY(-3px); box-shadow: 0 16px 34px var(--line); }
+
+/* Le corps s'étire sur toute la hauteur de l'affiche et pousse son bouton
+   en bas : centré, il laissait une bande vide de 175 px sous lui. L'affiche,
+   elle, garde sa propre hauteur — l'étirer montrerait le fond du cadre. */
+.event-poster__body { align-self: stretch; display: flex; flex-direction: column; }
+
+.event-poster__art {
+  align-self: start;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+  line-height: 0;
+}
+.event-poster__art img { display: block; width: 100%; height: auto; }
+
+.event-poster__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.event-poster__text { margin-top: 10px; font-size: 15px; color: var(--ink-soft); font-weight: 500; }
+
+/* LES FAITS EN BANDEAU, et non en colonne. Empilés, ils s'arrêtaient à
+   600 px et laissaient le reste de la carte vide — mesuré : un bloc de
+   1285 px dont le texte n'en occupait que la moitié. En trois colonnes ils
+   tiennent la largeur, et se lisent comme la feuille de match qu'ils sont.
+   L'intitulé passe AU-DESSUS de sa valeur : côte à côte, la colonne des
+   intitulés imposait sa largeur aux trois. */
+.event-poster__facts {
+  margin-top: clamp(20px, 2.4vw, 30px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 1.8vw, 26px);
+  border-top: 1px solid var(--line);
+  padding-top: clamp(16px, 1.8vw, 22px);
+}
+.event-poster__facts > div { display: grid; gap: 6px; align-content: start; }
+.event-poster__facts dt {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+.event-poster__facts dd {
+  font-size: clamp(14px, 1.05vw, 16px);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.event-poster .btn { margin-top: clamp(20px, 2.4vw, 30px); align-self: flex-start; }
+@media (min-width: 761px) { .event-poster .btn { margin-top: auto; } }
+
+/* Une seule colonne de faits sous 560 px : trois colonnes y donneraient
+   « Stade de » sur une ligne et « Brofodoumé » sur la suivante. */
+@media (max-width: 900px) {
+  .event-poster__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .event-poster { grid-template-columns: minmax(0, 1fr); }
+  /* L'affiche ne prend pas toute la largeur d'un téléphone : à 390 px elle
+     ferait 700 px de haut et pousserait les faits hors de l'écran. */
+  .event-poster__art { max-width: 300px; margin: 0 auto; }
+  .event-poster .btn { width: 100%; text-align: center; }
+}
+@media (max-width: 560px) {
+  .event-poster__facts { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* LE ROUGE DES INTITULÉS REMONTE D'UN CRAN EN SOMBRE, et seulement ici.
+   Mesuré sur les pixels rendus : #E2543F sur la surface d'une carte sombre
+   donne 4,36 — sous le seuil de 4,5 pour du texte de 10 et 13 px. Le kicker
+   et les trois intitulés tombaient tous les quatre.
+
+   C'est le geste que cette feuille a déjà fait une fois au niveau du jeton
+   (« remonté : le rouge d'origine manque de contraste ») ; on le refait à la
+   portée du seul bloc, pour ne rien changer aux autres pages. Le doublon de
+   sélecteurs est celui du reste du fichier : une règle ne peut pas être à la
+   fois dans une media query et hors d'elle. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .event-poster { --red: #EC6650; }
+}
+:root[data-theme="dark"] .event-poster { --red: #EC6650; }
+
 /* ---------- Event cards ----------------------------------------------------- */
 .event-card {
   display: grid;
