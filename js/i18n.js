@@ -219,11 +219,11 @@
     'Upcoming': 'À venir',
     'Mark the dates': 'Notez les dates',
     'Next Event — Détection': 'Prochain événement — Détection',
-    'Date to confirm': 'Date à confirmer',
+    '22 & 23 September 2026': '22 & 23 septembre 2026',
     'U-12 · U-15 · U-19': 'U-12 · U-15 · U-19',
     'Open to all': 'Ouvert à tous',
-    'One day to be seen. Bring your boots, bring your game — the next generation of Talent de Demain FC starts with a trial.':
-      'Une journée pour se faire voir. Prenez vos crampons, montrez votre jeu — la nouvelle génération du Talent de Demain FC commence par une détection.',
+    'Two days to be seen. Bring your boots, bring your game — the next generation of Talent de Demain FC starts with a trial.':
+      'Deux journées pour se faire voir. Prenez vos crampons, montrez votre jeu — la nouvelle génération du Talent de Demain FC commence par une détection.',
     'Register Your Interest': 'Je m\'inscris',
     'Trailer for the upcoming detection day': 'Bande-annonce de la prochaine détection',
     'Toggle sound': 'Activer ou couper le son',
