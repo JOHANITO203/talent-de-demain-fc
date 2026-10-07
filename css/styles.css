@@ -859,7 +859,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .outro__sponsor strong { letter-spacing: .16em; }
 /* Le tiret n'a de sens que sur une seule ligne — il est porté par le libellé
    et disparaît avec l'empilement. */
-.outro__sponsor-label::after { content: '—'; margin-left: .7em; opacity: .55; }
+.outro__sponsor-label::after { content: '·'; margin-left: .7em; opacity: .55; }
 
 /* ==========================================================================
    Load-in choreography
