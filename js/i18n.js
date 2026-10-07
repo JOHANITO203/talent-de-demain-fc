@@ -240,6 +240,25 @@
     'Poster for the Mini Tournament on 15 August 2026, Stade de Brofodoumé, from 2 pm — FC Néhémie, Talent de Demain FC and CIAF':
       'Affiche du Mini-tournoi du 15 août 2026, stade de Brofodoumé, dès 14h00 — FC Néhémie, Talent de Demain FC et CIAF',
 
+    /* ---- Future Talent Tournament (Accra) ---- */
+    'International Tournament': 'Tournoi international',
+    'Talent de Demain FC is one of the eight teams invited to Accra. Four days of matches, filmed and analysed for scouts.':
+      'Le Talent de Demain FC fait partie des huit équipes invitées à Accra. Quatre jours de matchs, filmés et analysés pour les recruteurs.',
+    'From 27 to 30 October 2026': 'Du 27 au 30 octobre 2026',
+    'Eight U18 teams, including Talent de Demain FC': 'Huit équipes U18, dont le Talent de Demain FC',
+    'Organised by': 'Organisé par',
+    'Young African Promises (YAP), powered by AS1': 'Young African Promises (YAP), avec AS1',
+    'Poster for the Future Talent Tournament, 27 to 30 October 2026 at Legon Sports Stadium, Accra, with the eight invited teams including Talent de Demain FC':
+      'Affiche du Future Talent Tournament, du 27 au 30 octobre 2026 au Legon Sports Stadium d\'Accra, avec les huit équipes invitées dont le Talent de Demain FC',
+    /* ---- German Connect trial (past) ---- */
+    'Looking back at the German Connect trial': 'Retour sur la détection German Connect',
+    'Two days at the Stade de Brofodoumé to spot the club\'s next generation. This is the trailer that launched it.':
+      'Deux journées au stade de Brofodoumé pour repérer la nouvelle génération du club. Voici la bande-annonce qui l\'a lancée.',
+    'Trailer for the German Connect trial': 'Bande-annonce de la détection German Connect',
+    'German Connect Trial': 'Détection German Connect',
+    'Poster for the German Connect trial, 22 and 23 September 2026 at Stade de Brofodoumé, from 9 am':
+      'Affiche de la détection German Connect, 22 et 23 septembre 2026 au stade de Brofodoumé, dès 9 h 00',
+
     'Club Tournament': 'Tournoi du club',
     'Formation A · Details announced on our socials':
       'Formation A · Détails annoncés sur nos réseaux',

@@ -89,76 +89,34 @@
       </div>
 
       <!-- ============ NEW EVENT POSTER ============
-           The artwork carries every fact itself — title, date, venue,
-           kick-off and the three crests. Two consequences, and they are the
-           whole design of this block:
-
-             it is never cropped. A poster is typography; a fixed ratio would
-             cut it. It keeps its own ratio inside its frame;
-
-             every fact it carries is repeated as REAL TEXT beside it. An
-             image is not indexed by a search engine, not read aloud by a
-             screen reader, and not there when it fails to load. The text is
-             the record; the poster is the picture of it.
-
-           Nothing here is invented: the date, the hour, the venue and the
-           three clubs are read off the artwork. It sits ABOVE the trailer
-           because it is dated and three days away, while the detection day
-           below still reads "date to confirm". -->
+           The artwork carries every fact itself, so it is never cropped, and
+           every fact it carries is repeated as REAL TEXT beside it: an image
+           is not indexed, not read aloud, and not there when it fails to
+           load. Nothing here is invented: dates, stadium, organiser, partners
+           and the eight teams are read off the official poster (received
+           7 October 2026). -->
       <article class="event-poster reveal">
         <figure class="event-poster__art">
-          <img src="assets/img/poster-mini-tournoi.webp?v=1"
-               alt="Affiche du Mini-tournoi du 15 août 2026, stade de Brofodoumé, dès 14h00 — FC Néhémie, Talent de Demain FC et CIAF"
-               width="1100" height="1971" loading="lazy" decoding="async">
+          <img src="assets/img/poster-future-talent.webp?v=1"
+               alt="Affiche du Future Talent Tournament, du 27 au 30 octobre 2026 au Legon Sports Stadium d'Accra, avec les huit équipes invitées dont le Talent de Demain FC"
+               width="1010" height="1280" loading="lazy" decoding="async">
         </figure>
 
         <div class="event-poster__body">
-          <p class="page-hero__kicker">Nouvel événement</p>
-          <h3 class="event-poster__title">Mini-tournoi</h3>
-          <p class="event-poster__text">Trois clubs, un après-midi de football.</p>
+          <p class="page-hero__kicker">Tournoi international</p>
+          <h3 class="event-poster__title">Future Talent Tournament</h3>
+          <p class="event-poster__text">Le Talent de Demain FC fait partie des huit équipes invitées à Accra. Quatre jours de matchs, filmés et analysés pour les recruteurs.</p>
 
           <dl class="event-poster__facts">
-            <div><dt>Quand</dt><dd>Samedi 15 août 2026, dès 14 h 00</dd></div>
-            <div><dt>Où</dt><dd>Stade de Brofodoumé</dd></div>
-            <div><dt>Qui</dt><dd>FC Néhémie · Talent de Demain FC · CIAF</dd></div>
+            <div><dt>Quand</dt><dd>Du 27 au 30 octobre 2026</dd></div>
+            <div><dt>Où</dt><dd>Legon Sports Stadium, Accra (Ghana)</dd></div>
+            <div><dt>Qui</dt><dd>Huit équipes U18, dont le Talent de Demain FC</dd></div>
+            <div><dt>Organisé par</dt><dd>Young African Promises (YAP), avec AS1</dd></div>
           </dl>
 
           <a class="btn" href="community.html#join">Nous suivre</a>
         </div>
       </article>
-
-      <!-- Next event teaser: the trailer plays muted while on screen -->
-      <div class="next-event reveal" data-cinema-wrap>
-        <video data-cinema
-               src="assets/video/next-event.mp4"
-               poster="assets/img/next-event-poster.webp"
-               loop muted playsinline preload="metadata"
-               aria-label="Bande-annonce de la prochaine détection"></video>
-
-        <!-- The trailer carries the event title on screen ("DÉTECTION"),
-             so this bar only adds the practical details. -->
-        <div class="next-event__body">
-          <div>
-            <p class="page-hero__kicker">Prochain événement — Détection</p>
-            <!-- La date était « à confirmer » ; elle est arrêtée. Le lieu
-                 entre avec elle : une date sans lieu ne fait pas venir. -->
-            <div class="next-event__meta">
-              <span>22 &amp; 23 septembre 2026</span>
-              <span>Brofodoumé</span>
-              <span>U-12 · U-15 · U-19</span>
-              <span>Ouvert à tous</span>
-            </div>
-            <p class="next-event__text">Deux journées pour se faire voir. Prenez vos crampons, montrez votre jeu — la nouvelle génération du Talent de Demain FC commence par une détection.</p>
-          </div>
-          <a class="btn btn--light" href="community.html#join">Je m'inscris</a>
-        </div>
-
-        <button class="film__sound" aria-label="Activer ou couper le son">
-          <svg class="icon-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>
-          <svg class="icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12"/></svg>
-        </button>
-      </div>
-
 
       <!-- Update dates/titles as the calendar fills in -->
       <div class="reveal">
@@ -212,8 +170,44 @@
         <span class="section__note">Affiches officielles</span>
       </div>
 
+      <!-- The German Connect trial (22 & 23 September 2026): its trailer,
+           kept in the same player as the old "next event" teaser. -->
+      <div class="next-event reveal" data-cinema-wrap>
+        <video data-cinema
+               src="assets/video/german-connect.mp4"
+               poster="assets/img/german-connect-poster.webp?v=1"
+               loop muted playsinline preload="metadata"
+               aria-label="Bande-annonce de la détection German Connect"></video>
+
+        <div class="next-event__body">
+          <div>
+            <p class="page-hero__kicker">Retour sur la détection German Connect</p>
+            <div class="next-event__meta">
+              <span>22 &amp; 23 septembre 2026</span>
+              <span>Brofodoumé</span>
+              <span>U-12 · U-15 · U-19</span>
+            </div>
+            <p class="next-event__text">Deux journées au stade de Brofodoumé pour repérer la nouvelle génération du club. Voici la bande-annonce qui l'a lancée.</p>
+          </div>
+          <a class="btn btn--light" href="community.html#join">Nous suivre</a>
+        </div>
+
+        <button class="film__sound" aria-label="Activer ou couper le son">
+          <svg class="icon-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>
+          <svg class="icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12"/></svg>
+        </button>
+      </div>
+
       <!-- Official event posters — shown uncropped (see .poster-wall) -->
       <div class="poster-wall reveal">
+        <figure>
+          <img src="assets/img/poster-german-connect.webp?v=1" alt="Affiche de la détection German Connect, 22 et 23 septembre 2026 au stade de Brofodoumé, dès 9 h 00">
+          <figcaption>Détection German Connect</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/img/poster-mini-tournoi.webp?v=1" alt="Affiche du Mini-tournoi du 15 août 2026, stade de Brofodoumé, dès 14h00 — FC Néhémie, Talent de Demain FC et CIAF">
+          <figcaption>Mini-tournoi</figcaption>
+        </figure>
         <figure>
           <img src="assets/img/poster-1.webp?v=2" alt="Affiche du Tournoi de Détection">
           <figcaption>Tournoi de Détection</figcaption>
@@ -245,7 +239,7 @@
     <span class="page-footer__sponsor">Sponsor officiel — <strong>Global Impact Côte d’Ivoire</strong></span>
   </footer>
 
-  <script src="js/i18n.js?v=3"></script>
+  <script src="js/i18n.js?v=4"></script>
   <script src="js/theme.js?v=1"></script>
   <script src="js/nav.js?v=2"></script>
   <script src="js/pages.js?v=10"></script>
