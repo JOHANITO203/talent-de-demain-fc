@@ -793,6 +793,9 @@
   text-transform: uppercase;
   color: var(--red-on-dark);
 }
+/* Événement sans date : une icône à la place de la date */
+.event-card__date--icone { display: grid; place-items: center; min-height: 58px; }
+.event-card__date--icone svg { width: 30px; height: 30px; }
 
 .event-card__title { font-weight: 800; font-size: 16px; text-transform: uppercase; letter-spacing: .03em; }
 .event-card__meta  { margin-top: 4px; font-size: 13px; color: var(--ink-soft); font-weight: 500; }
@@ -833,12 +836,19 @@
    -------------------------------------------------------------------------- */
 /* Grid, not columns: posters of very different heights left a ragged
    300px edge and a hole under the shortest one. Rows now align. */
+/* Rangées centrées : un nombre d'affiches qui ne remplit pas la dernière
+   rangée la centre au lieu de laisser une affiche seule à gauche. */
 .poster-wall {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: clamp(14px, 1.6vw, 22px);
-  align-items: start;
+  --pw-gap: clamp(14px, 1.6vw, 22px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--pw-gap);
+  align-items: flex-start;
 }
+.poster-wall figure { flex: 0 1 100%; }
+@media (min-width: 700px)  { .poster-wall figure { flex-basis: calc((100% - 2 * var(--pw-gap)) / 3); } }
+@media (min-width: 1200px) { .poster-wall figure { flex-basis: calc((100% - 4 * var(--pw-gap)) / 5); } }
 
 .poster-wall figure {
   position: relative;
@@ -902,7 +912,11 @@
 }
 .social-card span { font-size: 13px; color: rgba(255,255,255,.62); font-weight: 500; }
 
-.link-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+/* Colonnes fixes : 6 liens en 3+3, jamais un lien seul sur sa rangée ; 4 liens (page 404) en 2+2. */
+.link-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 600px) { .link-list { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .link-list { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 900px) { .link-list:has(> a:nth-child(4):last-child) { grid-template-columns: repeat(2, 1fr); } }
 .link-list a {
   display: flex;
   align-items: center;
