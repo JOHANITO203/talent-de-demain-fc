@@ -33,8 +33,8 @@
        s'affiche un instant dans le mauvais thème. */
     try { var _t = localStorage.getItem('tdd-theme');
           if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
-  <link rel="stylesheet" href="css/styles.css?v=50">
-  <link rel="stylesheet" href="css/pages.css?v=30">
+  <link rel="stylesheet" href="css/styles.css?v=51">
+  <link rel="stylesheet" href="css/pages.css?v=31">
 
   <!-- ===================== MESURE D'AUDIENCE =====================
        Cloudflare Web Analytics, sans cookie : aucun bandeau de consentement.
@@ -86,7 +86,7 @@
 
       <div class="squad">
         <!-- Club photos, graded to the site's look (see scripts/grade_photos) -->
-        <div class="gallery reveal" aria-label="Photos de la Formation A">
+        <div class="gallery reveal" role="region" tabindex="0" aria-label="Photos de la Formation A">
           <figure>
             <img src="assets/img/formation-a.webp?v=2" alt="La Formation A alignée avant le coup d'envoi">
             <figcaption>Composition d'avant-match</figcaption>
@@ -98,7 +98,7 @@
         </div>
 
         <!-- Rating card -->
-        <aside class="rating-card reveal" style="--rd:.12s" aria-label="Notes de la Formation A">
+        <div class="rating-card reveal" style="--rd:.12s" aria-label="Notes de la Formation A" role="group">
           <div>
             <p class="rating-card__kicker">Note de l'équipe</p>
             <h3 class="rating-card__name">Formation A</h3>
@@ -126,7 +126,7 @@
             <span class="stars" role="img" aria-label="Global : 4 étoiles sur 5"><i style="--fill:80%"></i></span>
             <span class="stat__value">81</span>
           </div>
-        </aside>
+        </div>
       </div>
     </section>
 
@@ -138,14 +138,14 @@
       </div>
 
       <div class="squad squad--flip">
-        <div class="gallery reveal" aria-label="Photos de la Formation B">
+        <div class="gallery reveal" role="region" tabindex="0" aria-label="Photos de la Formation B">
           <figure>
             <img src="assets/img/formation-b.webp?v=2" alt="Photo de l'équipe U-12 (Formation B) avant un match">
             <figcaption>Équipe U-12</figcaption>
           </figure>
         </div>
 
-        <aside class="rating-card reveal" style="--rd:.12s" aria-label="Notes de la Formation B">
+        <div class="rating-card reveal" style="--rd:.12s" aria-label="Notes de la Formation B" role="group">
           <div>
             <p class="rating-card__kicker">Note de l'équipe</p>
             <h3 class="rating-card__name">Formation B</h3>
@@ -173,7 +173,7 @@
             <span class="stars" role="img" aria-label="Global : 4 étoiles sur 5"><i style="--fill:78%"></i></span>
             <span class="stat__value">78</span>
           </div>
-        </aside>
+        </div>
       </div>
     </section>
 
@@ -245,7 +245,7 @@
           <img src="assets/img/staff.webp?v=2" alt="L'encadrement du Talent de Demain FC au bord du terrain">
         </div>
 
-        <aside class="panel reveal" style="--rd:.12s">
+        <div class="panel reveal" style="--rd:.12s">
           <p class="rating-card__kicker">Encadrement</p>
           <h3 class="rating-card__name">Le staff technique</h3>
           <p class="rating-card__text">Le staff travaille ensemble : entraîneur principal, adjoints, entraîneur des gardiens et préparateur physique. Chaque séance est préparée à l'avance, filmée, puis analysée avec les joueurs. Les jeunes s'entraînent ainsi dans des conditions professionnelles.</p>
@@ -255,14 +255,14 @@
             <span>Entraîneur des gardiens</span>
             <span>Préparateur physique</span>
           </div>
-        </aside>
+        </div>
       </div>
     </section>
 
     <!-- ============ PRESIDENT ============ -->
     <section class="section">
       <div class="duo duo--flip">
-        <div class="gallery reveal" aria-label="The president of Talent de Demain FC">
+        <div class="gallery reveal" role="region" tabindex="0" aria-label="Photos du président du Talent de Demain FC">
           <figure>
             <img src="assets/img/president.webp?v=3" alt="Portrait officiel du président du Talent de Demain FC">
             <figcaption>Le président</figcaption>
@@ -289,7 +289,7 @@
           </figure>
         </div>
 
-        <aside class="panel reveal" style="--rd:.12s">
+        <div class="panel reveal" style="--rd:.12s">
           <p class="rating-card__kicker">Direction</p>
           <h3 class="rating-card__name">Le président</h3>
           <p class="rating-card__text">Le président a fondé le club en 2023 avec une idée simple : beaucoup de jeunes ont du talent, mais peu ont leur chance. Le club donne à la nouvelle génération l'occasion de se montrer. Le président va aussi apprendre auprès des grands clubs européens pour en ramener les méthodes à Abidjan.</p>
@@ -298,7 +298,7 @@
             <span>Depuis 2023</span>
             <span>Échange avec Madrid</span>
           </div>
-        </aside>
+        </div>
       </div>
     </section>
 
@@ -318,7 +318,7 @@
     <span class="page-footer__sponsor">Sponsor officiel : <strong>Global Impact Côte d’Ivoire</strong></span>
   </footer>
 
-  <script src="js/i18n.js?v=7"></script>
+  <script src="js/i18n.js?v=8"></script>
   <script src="js/theme.js?v=1"></script>
   <script src="js/nav.js?v=2"></script>
   <script src="js/pages.js?v=11"></script>

@@ -343,6 +343,10 @@
     'Partners: ask us for the club\'s sponsorship file on WhatsApp or by e-mail.':
       'Partenaires : demandez le dossier de partenariat par WhatsApp ou e-mail.',
     'Chat on WhatsApp': 'Discuter sur WhatsApp',
+    'Page not found': 'Page introuvable',
+    'Error 404': 'Erreur 404',
+    'This page does not exist or has moved.': 'Cette page n\'existe pas ou a été déplacée.',
+    'Back to home': 'Retour à l\'accueil',
     'The fastest way to reach the club': 'Le moyen le plus rapide de joindre le club',
 
     'Useful Links': 'Liens utiles',
