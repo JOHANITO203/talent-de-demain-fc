@@ -33,8 +33,11 @@ scripts de fabrication restent hors dépôt, dans le dossier de travail.
   incrémenter le `?v=` de `hero-sequence.js` **et** la constante `VER`.
 - **Cache** : les liens CSS/JS/images portent un `?v=N`. L'incrémenter
   à chaque modification, sinon les navigateurs servent l'ancienne version.
-- **Le formulaire n'est pas encore branché.** Renseigner `data-endpoint`
-  dans `community.html` (voir DEPLOIEMENT.md du dossier de travail).
+- **Le formulaire ouvre WhatsApp.** Aucun service tiers : `js/pages.js`
+  écrit la demande dans un message prérempli vers le numéro `CLUB_WHATSAPP`.
+  Rien n'est enregistré : la demande existe seulement si le visiteur envoie
+  le message. Sans JavaScript, le formulaire est masqué et la page affiche
+  le WhatsApp et l'e-mail du club (voir DEPLOIEMENT.md du dossier de travail).
 - Aucune dépendance, aucun build : le dossier se publie tel quel.
 
 ## Publication

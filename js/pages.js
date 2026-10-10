@@ -14,8 +14,7 @@
 
   /* Runtime copy in the active language (see js/i18n.js) */
   var T = (window.TDD_I18N && window.TDD_I18N.t) || {
-    ok: 'Thank you — your request has been sent. The club will get back to you shortly.',
-    err: 'Sorry, the form could not be sent. Please write to contact@talentdedemainfc.com or message us on WhatsApp.'
+    ok: 'Your request is ready in WhatsApp. Tap Send to pass it on to the club.'
   };
 
   /* ---- 1. Release the load-in choreography ------------------------------ */
@@ -127,55 +126,56 @@
   });
 
   /* ---- Join form ----------------------------------------------------------
-     Submits in place so the visitor never leaves the page. Two backends are
-     supported without touching this code:
-       · data-endpoint set  → POST JSON there (Formspree, Basin, a Worker…)
-       · otherwise          → POST the form back to its own URL, which is what
-                              Netlify Forms listens for.
-     If JavaScript fails, the plain <form> still posts normally.            */
+     No third-party service. On submit, the sign-up is written into a WhatsApp
+     message pre-filled for the club's number. WhatsApp opens with that text;
+     the visitor sends it. Nothing is stored on the site.
+     Without JavaScript the form is hidden (css/pages.css) and the page shows
+     the WhatsApp and e-mail contacts instead.                              */
+  var CLUB_WHATSAPP = '2250101106428';            // international format, digits only
   var joinForm = document.querySelector('.join__form');
   if (joinForm) {
     var status = joinForm.querySelector('.join__status');
-    var submit = joinForm.querySelector('.join__submit');
+
+    function champ(data, nom) {
+      return String(data.get(nom) || '').trim() || '-';
+    }
 
     joinForm.addEventListener('submit', function (e) {
       if (!joinForm.checkValidity()) return;      // let the browser complain
       e.preventDefault();
 
-      var endpoint = (joinForm.dataset.endpoint || '').trim();
       var data = new FormData(joinForm);
       if (data.get('_gotcha')) return;            // honeypot tripped: silent no-op
 
-      submit.disabled = true;
-      status.className = 'join__status';
-      status.textContent = '';
+      var texte = [
+        'Bonjour, je souhaite rejoindre le Talent de Demain FC.',
+        '',
+        'Nom : ' + champ(data, 'name'),
+        'E-mail : ' + champ(data, 'email'),
+        'Je suis : ' + champ(data, 'role'),
+        'Catégorie : ' + champ(data, 'age_group'),
+        'Message : ' + champ(data, 'message'),
+        'Accord pour être contacté : oui'
+      ].join('\n');
+      var url = 'https://wa.me/' + CLUB_WHATSAPP + '?text=' + encodeURIComponent(texte);
 
-      var opts = endpoint
-        ? { method: 'POST', headers: { 'Accept': 'application/json' }, body: data }
-        : { method: 'POST', body: new URLSearchParams(data).toString(),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' } };
+      // Opened inside the click, so browsers do not block it.
+      var fenetre = window.open(url, '_blank');
+      if (fenetre) fenetre.opener = null;
+      else window.location.href = url;            // popup blocked: same tab instead
 
-      fetch(endpoint || window.location.pathname, opts)
-        .then(function (r) {
-          if (!r.ok) throw new Error(r.status);
-          joinForm.reset();
-          status.className = 'join__status is-ok';
-          status.textContent = T.ok;
+      joinForm.reset();
+      status.className = 'join__status is-ok';
+      status.textContent = T.ok;
 
-          /* The one metric that matters: a completed sign-up. Fired as a DOM
-             event and pushed to a dataLayer, so whichever analytics tool the
-             club ends up using can pick it up without touching this file.
-             `role` tells player / parent / supporter / partner apart. */
-          var role = data.get('role') || 'unknown';
-          document.dispatchEvent(new CustomEvent('tdd:join', { detail: { role: role } }));
-          window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push({ event: 'join_submitted', role: role });
-        })
-        .catch(function () {
-          status.className = 'join__status is-error';
-          status.textContent = T.err;
-        })
-        .then(function () { submit.disabled = false; });
+      /* The one metric that matters: a completed sign-up. Fired as a DOM
+         event and pushed to a dataLayer, so whichever analytics tool the
+         club ends up using can pick it up without touching this file.
+         `role` tells player / parent / supporter / partner apart. */
+      var role = data.get('role') || 'unknown';
+      document.dispatchEvent(new CustomEvent('tdd:join', { detail: { role: role } }));
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: 'join_submitted', role: role });
     });
   }
 

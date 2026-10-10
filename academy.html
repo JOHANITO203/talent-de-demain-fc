@@ -34,20 +34,16 @@
     try { var _t = localStorage.getItem('tdd-theme');
           if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
   <link rel="stylesheet" href="css/styles.css?v=50">
-  <link rel="stylesheet" href="css/pages.css?v=24">
+  <link rel="stylesheet" href="css/pages.css?v=30">
 
   <!-- ===================== MESURE D'AUDIENCE =====================
-       Coller ici le script du service choisi, juste avant </head>.
-
-       Recommandé — Cloudflare Web Analytics (gratuit, sans cookie,
-       donc AUCUN bandeau de consentement obligatoire) :
-       <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
-               data-cf-beacon='{"token":"VOTRE_TOKEN"}'></script>
-
+       Cloudflare Web Analytics, sans cookie : aucun bandeau de consentement.
        Le formulaire émet déjà un événement à chaque inscription réussie
        (voir js/pages.js) : évén. DOM "tdd:join" + dataLayer "join_submitted",
        avec le profil du visiteur (joueur / parent / supporter / partenaire).
        ============================================================= -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token":"726ce93a721006de21fafaa274973a9d"}'></script>
 </head>
 <body>
 
@@ -271,9 +267,9 @@
     <span class="page-footer__sponsor">Sponsor officiel : <strong>Global Impact Côte d’Ivoire</strong></span>
   </footer>
 
-  <script src="js/i18n.js?v=6"></script>
+  <script src="js/i18n.js?v=7"></script>
   <script src="js/theme.js?v=1"></script>
   <script src="js/nav.js?v=2"></script>
-  <script src="js/pages.js?v=10"></script>
+  <script src="js/pages.js?v=11"></script>
 </body>
 </html>

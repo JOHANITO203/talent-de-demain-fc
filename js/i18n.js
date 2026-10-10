@@ -330,18 +330,18 @@
     '(optional)': '(facultatif)',
     'Tell us about yourself, your position, your club…':
       'Parlez-nous de vous, de votre poste, de votre club…',
-    'I agree that Talent de Demain FC may contact me about trials, matches and club news. I can unsubscribe at any time.':
-      'J\'accepte que le Talent de Demain FC me contacte au sujet des détections, des matchs et de l\'actualité du club. Je peux me désinscrire à tout moment.',
+    'I agree that Talent de Demain FC may contact me about trials, matches and club news. I can ask to stop being contacted at any time.':
+      'J\'accepte que le Talent de Demain FC me contacte au sujet des détections, des matchs et de l\'actualité du club. Je peux demander à ne plus être contacté à tout moment.',
     'Send My Request': 'Envoyer ma demande',
     'Leave this empty:': 'Laissez ce champ vide :',
-    'Be first to know when trial dates are announced.':
-      'Soyez les premiers informés des dates de détection.',
-    'Match replays and academy films, straight to your inbox.':
-      'Les rediffusions et les films de l\'académie, directement dans votre boîte mail.',
-    'Invitations to club events and open days.':
-      'Des invitations aux événements et aux portes ouvertes du club.',
-    'Partners: we\'ll send you the club\'s sponsorship file.':
-      'Partenaires : nous vous envoyons le dossier de partenariat du club.',
+    'Trial dates, on the Events page.':
+      'Les dates de détection, sur la page Événements.',
+    'Match replays and academy films, on the site and on YouTube.':
+      'Les rediffusions des matchs et les films de l\'académie, sur le site et sur YouTube.',
+    'Club events and open days.':
+      'Les événements et les portes ouvertes du club.',
+    'Partners: ask us for the club\'s sponsorship file on WhatsApp or by e-mail.':
+      'Partenaires : demandez le dossier de partenariat par WhatsApp ou e-mail.',
     'Chat on WhatsApp': 'Discuter sur WhatsApp',
     'The fastest way to reach the club': 'Le moyen le plus rapide de joindre le club',
 
@@ -374,13 +374,11 @@
   /* Status strings written by pages.js at runtime, exposed for it to read. */
   var RUNTIME = {
     fr: {
-      ok: 'Merci, votre demande a bien été envoyée. Le club vous répondra rapidement.',
-      err: 'Désolé, le formulaire n\'a pas pu être envoyé. Écrivez-nous à contact@talentdedemainfc.com ou sur WhatsApp.',
+      ok: 'Votre demande est prête dans WhatsApp. Appuyez sur Envoyer pour la transmettre au club.',
       scroll: 'Défiler', rotation: 'Rotation'
     },
     en: {
-      ok: 'Thank you, your request has been sent. The club will get back to you shortly.',
-      err: 'Sorry, the form could not be sent. Please write to contact@talentdedemainfc.com or message us on WhatsApp.',
+      ok: 'Your request is ready in WhatsApp. Tap Send to pass it on to the club.',
       scroll: 'Scroll', rotation: 'Rotation'
     }
   };

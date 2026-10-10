@@ -1051,7 +1051,9 @@
   display: none;
 }
 .join__status.is-ok   { display: block; color: #7ee29a; }
-.join__status.is-error{ display: block; color: #ff9a90; }
+/* Sans JavaScript, le formulaire ne peut rien envoyer : on le masque et le
+   bloc <noscript> donne le WhatsApp et l'e-mail du club à la place. */
+html:not(.js-anim) .join__form { display: none; }
 
 /* Side panel: why join + the WhatsApp shortcut */
 .join__aside { display: flex; flex-direction: column; gap: 14px; }
