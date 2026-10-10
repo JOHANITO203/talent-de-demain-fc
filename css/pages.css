@@ -14,6 +14,33 @@
   padding: clamp(28px, 6vh, 72px) var(--gutter) clamp(20px, 4vh, 44px);
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Blason en matière (rendu Blender, tools/blender_fond_blason.py), ton sur ton à droite
+   du titre. Ses zones planes ont la couleur exacte du fond : le bord de l'image ne se voit pas. */
+:root { --blason-matiere: url("../assets/img/blason-matiere-clair.webp"); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --blason-matiere: url("../assets/img/blason-matiere-sombre.webp"); }
+}
+:root[data-theme="dark"] { --blason-matiere: url("../assets/img/blason-matiere-sombre.webp"); }
+
+.page-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: var(--gutter);
+  top: 50%;
+  translate: 0 -50%;
+  height: min(100%, 420px);
+  aspect-ratio: 736 / 900;
+  background: var(--blason-matiere) center / contain no-repeat;
+  pointer-events: none;
+}
+/* Sur mobile, le blason passerait sous le paragraphe : on le retire. */
+@media (max-width: 720px) {
+  .page-hero::after { display: none; }
 }
 
 .page-hero__kicker {
