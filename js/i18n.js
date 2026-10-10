@@ -347,6 +347,9 @@
     'Error 404': 'Erreur 404',
     'This page does not exist or has moved.': 'Cette page n\'existe pas ou a été déplacée.',
     'Back to home': 'Retour à l\'accueil',
+    'Legal notice': 'Mentions légales',
+    'Privacy policy': 'Confidentialité',
+    'Read the privacy policy': 'Lire la politique de confidentialité',
     'The fastest way to reach the club': 'Le moyen le plus rapide de joindre le club',
 
     'Useful Links': 'Liens utiles',

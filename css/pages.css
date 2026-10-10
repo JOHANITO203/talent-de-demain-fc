@@ -1135,6 +1135,19 @@ html:not(.js-anim) .join__form { display: none; }
   .join { grid-template-columns: 1fr; }
 }
 
+/* Lien vers la politique de confidentialité, sous la case de consentement */
+.join__privacy { margin: -4px 0 18px; font-size: 13px; }
+.join__privacy a { color: var(--on-dark); text-decoration: underline; text-underline-offset: 3px; } /* le panneau du formulaire est sombre dans les deux thèmes */
+
+/* Pages légales : mentions légales et politique de confidentialité */
+.legal { max-width: 72ch; line-height: 1.65; }
+.legal h2 { font-family: var(--font-display); font-size: 18px; text-transform: uppercase; letter-spacing: .04em; margin: 40px 0 12px; }
+.legal p, .legal li { font-size: 16px; color: var(--ink-soft); margin: 0 0 12px; }
+.legal ul { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 10px; }
+.legal a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+/* Champs à compléter : à retirer avant publication */
+.legal mark { background: var(--red); color: var(--on-red); padding: 0 4px; border-radius: 3px; }
+
 /* ---------- Compact footer -------------------------------------------------- */
 .page-footer {
   background: var(--band);
