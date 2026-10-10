@@ -44,6 +44,34 @@
        ============================================================= -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token":"726ce93a721006de21fafaa274973a9d"}'></script>
+  <!-- Données structurées : seul l'événement à venir avec une date connue est balisé.
+       Les autres sont passés, ou n'ont pas encore de date sur la page. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    "name": "Future Talent Tournament",
+    "description": "Tournoi international U18 à Accra, au Ghana : huit équipes invitées, dont le Talent de Demain FC.",
+    "image": "https://talentdedemainfc.com/assets/img/poster-future-talent.webp",
+    "url": "https://talentdedemainfc.com/events",
+    "startDate": "2026-10-27",
+    "endDate": "2026-10-30",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "sport": "Football",
+    "location": {
+      "@type": "Place",
+      "name": "Legon Sports Stadium",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Accra",
+        "addressCountry": "GH"
+      }
+    },
+    "organizer": { "@type": "Organization", "name": "Young African Promises (YAP)" },
+    "competitor": { "@type": "SportsTeam", "name": "Talent de Demain FC" }
+  }
+  </script>
 </head>
 <body>
 
