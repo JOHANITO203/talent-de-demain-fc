@@ -1,27 +1,10 @@
-/* ==========================================================================
-   Talent de Demain FC — French / English
-   --------------------------------------------------------------------------
-   THE MARKUP IS IN FRENCH. That is deliberate: the club recruits families in
-   Côte d'Ivoire, so French must be what search engines index and what a
-   visitor without JavaScript reads. English is applied on request instead.
 
-   The table below still reads english → french, because that is the order it
-   was authored in; the runtime map is simply inverted from it. One table,
-   two directions — there is no second list to keep in sync.
 
-   This file MUST load before nav.js / main.js / pages.js: those scripts split
-   headlines into per-letter spans and clone the nav links, and both need the
-   final text. Switching language therefore reloads the page rather than
-   re-translating a DOM that has already been transformed.
-   ========================================================================== */
 
 (function () {
   'use strict';
 
-  /* Words that read the same in both languages, or must never be translated
-     (club, sponsor, competition and people names) are simply absent below. */
   var FR = {
-    /* ---- navigation & chrome ---- */
     'Home': 'Accueil',
     'Squads': 'Équipes',
     'Academy': 'Académie',
@@ -37,7 +20,6 @@
     'Official sponsor:': 'Sponsor officiel :',
     '© 2026 Talent de Demain FC · EST. 2023': '© 2026 Talent de Demain FC · DEPUIS 2023',
 
-    /* ---- landing ---- */
     'Talent de Demain FC · Forging Football Leaders':
       'Talent de Demain FC · Former les leaders du football',
     'Talent de Demain FC, the academy forging the football leaders of tomorrow.':
@@ -68,7 +50,6 @@
     'We support every player from their first session to their first professional contract.':
       'Nous accompagnons chaque joueur de sa première séance jusqu\'à son premier contrat professionnel.',
 
-    /* ---- squads ---- */
     'Squads · Talent de Demain FC': 'Équipes · Talent de Demain FC',
     'The squads of Talent de Demain FC: Formation A, Formation B, coaching staff and club leadership.':
       'Les équipes du Talent de Demain FC : Formation A, Formation B, encadrement et direction du club.',
@@ -164,7 +145,6 @@
     'The president of Talent de Demain FC in a working meeting with Real Madrid representatives in Madrid':
       'Le président du Talent de Demain FC en réunion de travail avec des représentants du Real Madrid',
 
-    /* ---- academy ---- */
     'Academy · Talent de Demain FC': 'Académie · Talent de Demain FC',
     'Match replays and training sessions of the Talent de Demain FC academy.':
       'Les rediffusions de matchs et les séances d\'entraînement de l\'académie du Talent de Demain FC.',
@@ -173,7 +153,6 @@
       'Nous filmons chaque match, et chaque séance a un objectif. Regardez nos rencontres en entier, classées par événement du club, puis découvrez notre semaine d\'entraînement.',
     'Match Replays': 'Rediffusions des matchs',
     'Full games · VEO': 'Matchs entiers · VEO',
-    /* ---- YouTube replays (club channel) ---- */
     'Full games · YouTube and Veo': 'Matchs entiers · YouTube et Veo',
     'New': 'Nouveau',
     'Play the match here': 'Lire le match dans la page',
@@ -222,7 +201,6 @@
     'Player controlling a high ball in training':
       'Joueur contrôlant un ballon haut à l\'entraînement',
 
-    /* ---- events ---- */
     'Events · Talent de Demain FC': 'Événements · Talent de Demain FC',
     'Upcoming and past events of Talent de Demain FC: tournaments, trials and club days.':
       'Les événements à venir et passés du Talent de Demain FC : tournois, détections et journées du club.',
@@ -237,7 +215,6 @@
     'Register Your Interest': 'Je m\'inscris',
     'Trailer for the upcoming detection day': 'Bande-annonce de la prochaine détection',
     'Toggle sound': 'Activer ou couper le son',
-    /* ---- the mini tournament poster ---- */
     'New Event': 'Nouvel événement',
     'Mini Tournament': 'Mini-tournoi',
     'Three clubs, one afternoon of football.': 'Trois clubs, un après-midi de football.',
@@ -245,12 +222,9 @@
     'Where': 'Où',
     'Who': 'Qui',
     'Saturday 15 August 2026, from 2 pm': 'Samedi 15 août 2026, dès 14 h 00',
-    /* Le stade et les trois clubs sont des NOMS : ils ne se traduisent pas,
-       et n'ont donc pas de ligne ici. */
     'Poster for the Mini Tournament on 15 August 2026 at Stade de Brofodoumé, from 2 pm, with FC Néhémie, Talent de Demain FC and CIAF':
       'Affiche du Mini-tournoi du 15 août 2026 au stade de Brofodoumé, dès 14 h 00, avec FC Néhémie, Talent de Demain FC et CIAF',
 
-    /* ---- Future Talent Tournament (Accra) ---- */
     'International Tournament': 'Tournoi international',
     'Talent de Demain FC is one of the eight teams invited to Accra. Four days of matches, filmed and analysed for scouts.':
       'Le Talent de Demain FC fait partie des huit équipes invitées à Accra. Quatre jours de matchs, filmés et analysés pour les recruteurs.',
@@ -260,7 +234,6 @@
     'Young African Promises (YAP), powered by AS1': 'Young African Promises (YAP), avec AS1',
     'Poster for the Future Talent Tournament, 27 to 30 October 2026 at Legon Sports Stadium, Accra, with the eight invited teams including Talent de Demain FC':
       'Affiche du Future Talent Tournament, du 27 au 30 octobre 2026 au Legon Sports Stadium d\'Accra, avec les huit équipes invitées dont le Talent de Demain FC',
-    /* ---- German Connect trial (past) ---- */
     'Looking back at the German Connect trial': 'Retour sur la détection German Connect',
     'Two days at the Stade de Brofodoumé to spot the club\'s next generation. This is the trailer that launched it.':
       'Deux journées au stade de Brofodoumé pour repérer la nouvelle génération du club. Voici la bande-annonce qui l\'a lancée.',
@@ -293,7 +266,6 @@
       'Affiche du match amical contre l\'Académie Aka de Bongo',
     'Poster for Babi Talents Connection': 'Affiche de Babi Talents Connection',
 
-    /* ---- community ---- */
     'Community · Talent de Demain FC': 'Communauté · Talent de Demain FC',
     'Follow Talent de Demain FC: social networks, useful links and contact details.':
       'Suivez le Talent de Demain FC : réseaux sociaux, liens utiles et coordonnées.',
@@ -372,13 +344,11 @@
     'for the next date.': 'pour la prochaine date.'
   };
 
-  /* Same English word, different French depending on where it sits. */
   var SCOPED = {
     '.kit__kicker': { 'Home': 'Domicile', 'Away': 'Extérieur', 'Third': 'Third',
                       'Alternate': 'Alternatif' }
   };
 
-  /* Status strings written by pages.js at runtime, exposed for it to read. */
   var RUNTIME = {
     fr: {
       ok: 'Votre demande est prête dans WhatsApp. Appuyez sur Envoyer pour la transmettre au club.',
@@ -390,17 +360,12 @@
     }
   };
 
-  /* ---- language state --------------------------------------------------- */
   var stored;
   try { stored = localStorage.getItem('tdd-lang'); } catch (e) { stored = null; }
-  var lang = (stored === 'en' || stored === 'fr') ? stored : 'fr';   // FR default
+  var lang = (stored === 'en' || stored === 'fr') ? stored : 'fr';
 
   window.TDD_I18N = { lang: lang, t: RUNTIME[lang] };
 
-  /* Invert the table: the page is French, so we look French up to get English.
-     Where several English strings share one French wording (case variants such
-     as "The 2026 Kits" / "The 2026 kits"), the first one wins — the difference
-     is cosmetic. */
   var EN = {}, k1;
   for (k1 in FR) if (!(FR[k1] in EN)) EN[FR[k1]] = k1;
 
@@ -410,16 +375,13 @@
     for (w1 in SCOPED[sel1]) SCOPED_EN[sel1][SCOPED[sel1][w1]] = w1;
   }
 
-  /* Normalise for lookup: collapse whitespace, unify the two apostrophes. */
   function key(s) {
     return s.replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   }
 
-  /* Only ever called to go French → English; French needs no work. */
   function translate() {
     document.documentElement.lang = 'en';
 
-    // 1. text nodes
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
         var p = n.parentNode;
@@ -439,14 +401,12 @@
       }
       if (out === undefined) out = EN[k];
       if (out !== undefined) {
-        // keep the surrounding whitespace so inline layout is unchanged
         var lead = n.nodeValue.match(/^\s*/)[0];
         var tail = n.nodeValue.match(/\s*$/)[0];
         n.nodeValue = lead + out + tail;
       }
     });
 
-    // 2. translatable attributes
     ['placeholder', 'aria-label', 'alt', 'title'].forEach(function (attr) {
       document.querySelectorAll('[' + attr + ']').forEach(function (el) {
         var out = EN[key(el.getAttribute(attr))];
@@ -454,7 +414,6 @@
       });
     });
 
-    // 3. document title and description
     var t = EN[key(document.title)];
     if (t) document.title = t;
     var meta = document.querySelector('meta[name="description"]');
@@ -466,7 +425,6 @@
 
   if (lang === 'en') translate();
 
-  /* ---- the switch ------------------------------------------------------- */
   document.addEventListener('DOMContentLoaded', function () {
     var actions = document.querySelector('.nav__actions');
     if (!actions) return;
@@ -474,13 +432,10 @@
     var btn = document.createElement('button');
     btn.className = 'lang-btn';
     btn.type = 'button';
-    // the button offers the OTHER language
     btn.textContent = lang === 'fr' ? 'EN' : 'FR';
     btn.setAttribute('aria-label', lang === 'fr' ? 'Switch to English' : 'Passer en français');
     btn.addEventListener('click', function () {
       try { localStorage.setItem('tdd-lang', lang === 'fr' ? 'en' : 'fr'); } catch (e) {}
-      // reload rather than re-translate: headlines have been split into
-      // per-letter spans and the menu panel cloned by the time this runs
       location.reload();
     });
     actions.insertBefore(btn, actions.firstChild);

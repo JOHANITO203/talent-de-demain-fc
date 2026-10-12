@@ -1,23 +1,13 @@
-/* ==========================================================================
-   Talent de Demain FC — inner pages behavior
-   1. Load-in choreography release (same `is-ready` contract as the landing).
-   2. Kinetic page title: per-letter staggered rise.
-   3. Reveal-on-scroll for sections/cards (IntersectionObserver).
-   4. Match cards: clicking play swaps the poster for the embedded replay
-      (the embed URL lives in data-embed; empty = replay not published yet).
-   ========================================================================== */
 
 (function () {
   'use strict';
 
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Runtime copy in the active language (see js/i18n.js) */
   var T = (window.TDD_I18N && window.TDD_I18N.t) || {
     ok: 'Your request is ready in WhatsApp. Tap Send to pass it on to the club.'
   };
 
-  /* ---- 1. Release the load-in choreography ------------------------------ */
   function ready() {
     document.documentElement.classList.add('is-ready');
     document.querySelectorAll('.page-hero__title').forEach(function (t) {
@@ -28,13 +18,8 @@
     ? document.fonts.ready : Promise.resolve()).then(function () {
     requestAnimationFrame(ready);
   });
-  setTimeout(ready, 1200); // safety net
+  setTimeout(ready, 1200);
 
-  /* ---- 2. Kinetic page title --------------------------------------------
-     Letters are grouped WORD BY WORD. Loose per-letter spans are each an
-     inline-block, so the browser may break a line between any two of them —
-     that is how "EVENEMENTS" came out split as "EVENEMEN / TS" on a phone.
-     Giving every word its own nowrap box confines breaks to real spaces. */
   document.querySelectorAll('.page-hero__title').forEach(function (title) {
     var text = title.textContent.trim();
     title.textContent = '';
@@ -43,7 +28,7 @@
     var i = 0;
     text.split(/(\s+)/).forEach(function (chunk) {
       if (!chunk) return;
-      if (/^\s+$/.test(chunk)) {                 // a real, breakable space
+      if (/^\s+$/.test(chunk)) {
         title.appendChild(document.createTextNode(' '));
         return;
       }
@@ -61,7 +46,6 @@
     });
   });
 
-  /* ---- 3. Reveal on scroll ---------------------------------------------- */
   var revealed = document.querySelectorAll('.reveal');
   if (reducedMotion || !('IntersectionObserver' in window)) {
     revealed.forEach(function (el) { el.classList.add('in-view'); });
@@ -77,12 +61,6 @@
     revealed.forEach(function (el) { io.observe(el); });
   }
 
-  /* ---- Cinematic videos ---------------------------------------------------
-     Any <video data-cinema> plays muted while it is on screen and pauses
-     when it leaves, so playback follows the scroll. Clicking the video
-     toggles play/pause; the round .film__sound button inside the same
-     wrapper toggles the audio (and starts playback if it was paused).
-     Only one soundtrack at a time: unmuting one mutes the others.        */
   var cinemas = Array.prototype.slice.call(
     document.querySelectorAll('video[data-cinema]')
   );
@@ -110,7 +88,6 @@
     soundBtn.addEventListener('click', function () {
       var turningOn = video.muted;
       if (turningOn) {
-        // Mute every other cinematic video first — never two soundtracks.
         cinemas.forEach(function (other) {
           if (other === video) return;
           other.muted = true;
@@ -125,13 +102,7 @@
     });
   });
 
-  /* ---- Join form ----------------------------------------------------------
-     No third-party service. On submit, the sign-up is written into a WhatsApp
-     message pre-filled for the club's number. WhatsApp opens with that text;
-     the visitor sends it. Nothing is stored on the site.
-     Without JavaScript the form is hidden (css/pages.css) and the page shows
-     the WhatsApp and e-mail contacts instead.                              */
-  var CLUB_WHATSAPP = '2250101106428';            // international format, digits only
+  var CLUB_WHATSAPP = '2250101106428';
   var joinForm = document.querySelector('.join__form');
   if (joinForm) {
     var status = joinForm.querySelector('.join__status');
@@ -141,11 +112,11 @@
     }
 
     joinForm.addEventListener('submit', function (e) {
-      if (!joinForm.checkValidity()) return;      // let the browser complain
+      if (!joinForm.checkValidity()) return;
       e.preventDefault();
 
       var data = new FormData(joinForm);
-      if (data.get('_gotcha')) return;            // honeypot tripped: silent no-op
+      if (data.get('_gotcha')) return;
 
       var texte = [
         'Bonjour, je souhaite rejoindre le Talent de Demain FC.',
@@ -159,19 +130,14 @@
       ].join('\n');
       var url = 'https://wa.me/' + CLUB_WHATSAPP + '?text=' + encodeURIComponent(texte);
 
-      // Opened inside the click, so browsers do not block it.
       var fenetre = window.open(url, '_blank');
       if (fenetre) fenetre.opener = null;
-      else window.location.href = url;            // popup blocked: same tab instead
+      else window.location.href = url;
 
       joinForm.reset();
       status.className = 'join__status is-ok';
       status.textContent = T.ok;
 
-      /* The one metric that matters: a completed sign-up. Fired as a DOM
-         event and pushed to a dataLayer, so whichever analytics tool the
-         club ends up using can pick it up without touching this file.
-         `role` tells player / parent / supporter / partner apart. */
       var role = data.get('role') || 'unknown';
       document.dispatchEvent(new CustomEvent('tdd:join', { detail: { role: role } }));
       window.dataLayer = window.dataLayer || [];
@@ -179,12 +145,6 @@
     });
   }
 
-  /* ---- 4. Replay playback -------------------------------------------------
-     Two modes on .match-card__play:
-     - data-embed="https://www.youtube.com/embed/ID" → in-card iframe player
-     - data-href="https://app.veo.co/matches/…"      → opens the platform
-       page in a new tab (Veo forbids iframing via X-Frame-Options)
-     Neither attribute set = replay not available yet.                       */
   document.querySelectorAll('.match-card__play').forEach(function (btn) {
     var embed = (btn.dataset.embed || '').trim();
     var href  = (btn.dataset.href  || '').trim();

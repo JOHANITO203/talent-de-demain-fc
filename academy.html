@@ -6,8 +6,6 @@
   <title>Académie · Talent de Demain FC</title>
   <meta name="description" content="Rediffusions des matchs et séances d'entraînement de l'académie Talent de Demain FC.">
   
-  <!-- Sharing: without these a link pasted into WhatsApp or Facebook
-       shows a bare URL. The image must be an absolute address. -->
   <link rel="canonical" href="https://talentdedemainfc.com/academy">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Talent de Demain FC">
@@ -24,30 +22,20 @@
   <meta name="twitter:description" content="Rediffusions des matchs et séances d'entraînement de l'académie Talent de Demain FC.">
   <meta name="twitter:image" content="https://talentdedemainfc.com/assets/img/training-1.webp">
   <meta name="theme-color" content="#F0EFED">
-  <!-- Lu avant le CSS : coupe l'assombrissement automatique des navigateurs -->
   <meta name="color-scheme" content="light dark">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="assets/img/logo-crest.png">
   <script>document.documentElement.classList.add('js-anim');
-    /* Choix de thème mémorisé, appliqué avant le rendu : sinon la page
-       s'affiche un instant dans le mauvais thème. */
     try { var _t = localStorage.getItem('tdd-theme');
           if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
   <link rel="stylesheet" href="css/styles.css?v=51">
   <link rel="stylesheet" href="css/pages.css?v=37">
 
-  <!-- ===================== MESURE D'AUDIENCE =====================
-       Cloudflare Web Analytics, sans cookie : aucun bandeau de consentement.
-       Le formulaire émet déjà un événement à chaque inscription réussie
-       (voir js/pages.js) : évén. DOM "tdd:join" + dataLayer "join_submitted",
-       avec le profil du visiteur (joueur / parent / supporter / partenaire).
-       ============================================================= -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token":"726ce93a721006de21fafaa274973a9d"}'></script>
 </head>
 <body>
 
-  <!-- ============ NAVIGATION ============ -->
   <header class="nav">
     <a class="nav__brand" href="index.html" aria-label="Talent de Demain FC, accueil">
       <img src="assets/img/logo-crest.png?v=3" alt="Blason du Talent de Demain FC" width="52" height="68">
@@ -70,20 +58,12 @@
 
   <main class="page">
 
-    <!-- ============ PAGE HERO ============ -->
     <section class="page-hero">
       <p class="page-hero__kicker">Sur le terrain</p>
       <h1 class="page-hero__title">Académie</h1>
       <p class="page-hero__lead">Nous filmons chaque match, et chaque séance a un objectif. Regardez nos rencontres en entier, classées par événement du club, puis découvrez notre semaine d'entraînement.</p>
     </section>
 
-    <!-- ============ MATCH REPLAYS ============ -->
-    <!-- To publish a replay: paste the embed URL into data-embed
-         (e.g. https://www.youtube-nocookie.com/embed/VIDEO_ID). An empty
-         data-embed shows the card as "replay coming soon". Newest first:
-         the four YouTube matches (club channel) come before the July Veo
-         games. Match dates are read from each video's description; the
-         selection match has none, so it shows its upload date. -->
     <section class="section">
       <div class="section__head reveal">
         <h2 class="section__title">Rediffusions des matchs</h2>
@@ -205,10 +185,8 @@
       </div>
     </section>
 
-    <!-- ============ TRAINING SESSIONS ============ -->
-    <!-- Session film: plays muted while on screen (see js/pages.js) -->
     <section class="film reveal" aria-label="Film d'entraînement"
-             style="--film-bg: url('assets/img/training-bg.webp?v=2')">
+             style="--film-bg: url('/assets/img/training-bg.webp?v=2')">
       <div class="film__inner">
         <div class="film__copy">
           <p class="page-hero__kicker">Séances d'entraînement</p>
@@ -253,7 +231,6 @@
 
   </main>
 
-  <!-- ============ FOOTER ============ -->
   <footer class="page-footer">
     <span class="page-footer__brand">Talent de Demain FC</span>
     <nav aria-label="Pied de page">

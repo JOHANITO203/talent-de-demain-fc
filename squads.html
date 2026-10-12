@@ -6,8 +6,6 @@
   <title>Équipes · Talent de Demain FC</title>
   <meta name="description" content="Les équipes du Talent de Demain FC : Formation A, Formation B, encadrement et direction du club.">
   
-  <!-- Sharing: without these a link pasted into WhatsApp or Facebook
-       shows a bare URL. The image must be an absolute address. -->
   <link rel="canonical" href="https://talentdedemainfc.com/squads">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Talent de Demain FC">
@@ -24,30 +22,20 @@
   <meta name="twitter:description" content="Les équipes du Talent de Demain FC : Formation A, Formation B, encadrement et direction du club.">
   <meta name="twitter:image" content="https://talentdedemainfc.com/assets/img/formation-a.webp">
   <meta name="theme-color" content="#F0EFED">
-  <!-- Lu avant le CSS : coupe l'assombrissement automatique des navigateurs -->
   <meta name="color-scheme" content="light dark">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="assets/img/logo-crest.png">
   <script>document.documentElement.classList.add('js-anim');
-    /* Choix de thème mémorisé, appliqué avant le rendu : sinon la page
-       s'affiche un instant dans le mauvais thème. */
     try { var _t = localStorage.getItem('tdd-theme');
           if (_t) document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
   <link rel="stylesheet" href="css/styles.css?v=51">
   <link rel="stylesheet" href="css/pages.css?v=37">
 
-  <!-- ===================== MESURE D'AUDIENCE =====================
-       Cloudflare Web Analytics, sans cookie : aucun bandeau de consentement.
-       Le formulaire émet déjà un événement à chaque inscription réussie
-       (voir js/pages.js) : évén. DOM "tdd:join" + dataLayer "join_submitted",
-       avec le profil du visiteur (joueur / parent / supporter / partenaire).
-       ============================================================= -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token":"726ce93a721006de21fafaa274973a9d"}'></script>
 </head>
 <body>
 
-  <!-- ============ NAVIGATION ============ -->
   <header class="nav">
     <a class="nav__brand" href="index.html" aria-label="Talent de Demain FC, accueil">
       <img src="assets/img/logo-crest.png?v=3" alt="Blason du Talent de Demain FC" width="52" height="68">
@@ -70,14 +58,12 @@
 
   <main class="page">
 
-    <!-- ============ PAGE HERO ============ -->
     <section class="page-hero">
       <p class="page-hero__kicker">Le club</p>
       <h1 class="page-hero__title">Équipes</h1>
       <p class="page-hero__lead">Le club compte trois catégories : U-12, U-15 et U-19. Toutes s'entraînent et jouent avec la même idée du football, courageuse et disciplinée, où les jeunes talents ont leur place.</p>
     </section>
 
-    <!-- ============ FORMATION A ============ -->
     <section class="section">
       <div class="section__head reveal">
         <h2 class="section__title">Formation A</h2>
@@ -85,7 +71,6 @@
       </div>
 
       <div class="squad">
-        <!-- Club photos, graded to the site's look (see scripts/grade_photos) -->
         <div class="gallery reveal" role="region" tabindex="0" aria-label="Photos de la Formation A">
           <figure>
             <img src="assets/img/formation-a.webp?v=2" alt="La Formation A alignée avant le coup d'envoi">
@@ -97,7 +82,6 @@
           </figure>
         </div>
 
-        <!-- Rating card -->
         <div class="rating-card reveal" style="--rd:.12s" aria-label="Notes de la Formation A" role="group">
           <div>
             <p class="rating-card__kicker">Note de l'équipe</p>
@@ -130,7 +114,6 @@
       </div>
     </section>
 
-    <!-- ============ FORMATION B ============ -->
     <section class="section">
       <div class="section__head reveal">
         <h2 class="section__title">Formation B</h2>
@@ -177,7 +160,6 @@
       </div>
     </section>
 
-    <!-- ============ KITS ============ -->
     <section class="section">
       <div class="section__head reveal">
         <h2 class="section__title" id="kits">Les maillots 2026</h2>
@@ -233,7 +215,6 @@
       <p class="kits__sponsor reveal">Sponsor officiel : <strong>Global Impact Côte d'Ivoire</strong></p>
     </section>
 
-    <!-- ============ COACHING STAFF ============ -->
     <section class="section">
       <div class="section__head reveal">
         <h2 class="section__title">L'encadrement</h2>
@@ -259,7 +240,6 @@
       </div>
     </section>
 
-    <!-- ============ PRESIDENT ============ -->
     <section class="section">
       <div class="duo duo--flip">
         <div class="gallery reveal" role="region" tabindex="0" aria-label="Photos du président du Talent de Demain FC">
@@ -304,7 +284,6 @@
 
   </main>
 
-  <!-- ============ FOOTER ============ -->
   <footer class="page-footer">
     <span class="page-footer__brand">Talent de Demain FC</span>
     <nav aria-label="Pied de page">

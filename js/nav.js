@@ -1,18 +1,5 @@
-/* ==========================================================================
-   Talent de Demain FC — menu button
-   --------------------------------------------------------------------------
-   Loaded by every page. The button used to be inert, which left the site
-   with no navigation at all on phones (the horizontal menu is hidden below
-   900px, and the landing page has no footer nav to fall back on).
 
-   The panel is BUILT FROM the existing .nav__menu links rather than being
-   duplicated into five HTML files — one source of truth, so the panel can
-   never drift out of sync with the header.
 
-   Behaviour: toggles on click, closes on Escape / backdrop / link choice,
-   locks page scroll while open, moves focus into the panel and returns it
-   to the button on close, and reports state through aria-expanded.
-   ========================================================================== */
 
 (function () {
   'use strict';
@@ -21,7 +8,6 @@
   var menu = document.querySelector('.nav__menu');
   if (!btn || !menu) return;
 
-  /* ---- Build the panel once, from the header links --------------------- */
   var panel = document.createElement('div');
   panel.className = 'nav-panel';
   panel.id = 'nav-panel';
@@ -55,7 +41,6 @@
   panel.appendChild(extra);
   document.body.appendChild(panel);
 
-  /* ---- Button: add the close icon and the ARIA wiring ------------------ */
   var barsIcon = btn.querySelector('svg');
   if (barsIcon) barsIcon.classList.add('icon-bars');
   btn.insertAdjacentHTML('beforeend',
@@ -64,7 +49,6 @@
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('aria-controls', 'nav-panel');
 
-  /* ---- Open / close ----------------------------------------------------- */
   var open = false;
   var scrollY = 0;
 
@@ -77,7 +61,6 @@
     document.documentElement.classList.toggle('nav-open', open);
 
     if (open) {
-      // freeze the page behind the panel without losing the scroll position
       scrollY = window.pageYOffset;
       document.body.style.position = 'fixed';
       document.body.style.top = -scrollY + 'px';
@@ -98,18 +81,15 @@
     setOpen(!open);
   });
 
-  // a link choice closes the panel (needed for same-page #anchors, which
-  // would otherwise leave it open on top of the target)
   panel.addEventListener('click', function (e) {
     if (e.target.closest('a')) setOpen(false);
-    else if (e.target === panel) setOpen(false);   // backdrop
+    else if (e.target === panel) setOpen(false);
   });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && open) setOpen(false);
   });
 
-  // keep focus inside the panel while it is open
   document.addEventListener('focusin', function (e) {
     if (open && !panel.contains(e.target) && e.target !== btn) {
       var first = panel.querySelector('a');
@@ -117,7 +97,6 @@
     }
   });
 
-  // a resize into the desktop layout should not leave the page frozen
   window.addEventListener('resize', function () {
     if (open && window.innerWidth > 900) setOpen(false);
   });

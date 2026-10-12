@@ -1,18 +1,5 @@
-/* ==========================================================================
-   Choix du thème clair / sombre
-   --------------------------------------------------------------------------
-   Le site suit la préférence du système par défaut. Ce module ajoute un choix
-   explicite, mémorisé, qui prend le pas dessus — comme le sélecteur de langue.
 
-   L'attribut data-theme est posé sur <html> AVANT le rendu, par le petit
-   script en ligne dans le <head> de chaque page. Ici on ne fait que construire
-   le bouton et écrire le choix : si ce module tardait à charger, la page
-   s'afficherait un instant dans le mauvais thème.
 
-   Trois états, pas deux : « système » est le défaut et reste accessible, pour
-   qu'un visiteur puisse revenir au comportement automatique après avoir
-   essayé les deux.
-   ========================================================================== */
 
 (function () {
   'use strict';
@@ -31,11 +18,9 @@
     try {
       if (mode) localStorage.setItem(KEY, mode);
       else localStorage.removeItem(KEY);
-    } catch (e) { /* navigation privée : le choix ne survit pas, tant pis */ }
+    } catch (e) {   }
   }
 
-  /* Ce que le bouton affiche : l'état VERS lequel il fait basculer, pas
-     l'état courant — c'est ce que l'utilisateur cherche à savoir. */
   function isDark() {
     var m = stored();
     return m ? m === 'dark' : sys.matches;
@@ -60,7 +45,6 @@
 
     function paint() {
       var dark = isDark();
-      // On bascule vers l'inverse : l'icône annonce la destination.
       btn.innerHTML = dark ? SUN : MOON;
       btn.setAttribute('aria-label', dark ? 'Passer en thème clair' : 'Passer en thème sombre');
       btn.title = btn.getAttribute('aria-label');
@@ -71,13 +55,11 @@
       paint();
     });
 
-    // Sans choix mémorisé, le bouton doit suivre le système en direct.
     if (sys.addEventListener) {
       sys.addEventListener('change', function () { if (!stored()) paint(); });
     }
 
     paint();
-    // Après le sélecteur de langue, avant le menu : langue puis thème puis menu.
     var lang = actions.querySelector('.lang-btn');
     if (lang && lang.nextSibling) actions.insertBefore(btn, lang.nextSibling);
     else actions.insertBefore(btn, actions.firstChild);

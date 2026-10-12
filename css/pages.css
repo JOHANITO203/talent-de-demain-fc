@@ -1,11 +1,4 @@
-/* ==========================================================================
-   Talent de Demain FC — inner pages (Squads / Academy / Events / Community)
-   Extends css/styles.css: same tokens, nav, buttons, load-in choreography.
-   Rating cards take inspiration from football-game team ratings (stars,
-   ATT/DEF/OVR) but are drawn entirely in the club's own design language.
-   ========================================================================== */
 
-/* ---------- Page scaffolding ---------------------------------------------- */
 .page {
   padding-top: calc(var(--nav-h) + 24px);
 }
@@ -18,8 +11,6 @@
   isolation: isolate;
 }
 
-/* Blason en matière (rendu Blender, tools/blender_fond_blason.py), ton sur ton à droite
-   du titre. Ses zones planes ont la couleur exacte du fond : le bord de l'image ne se voit pas. */
 :root { --blason-matiere: url("../assets/img/blason-matiere-clair.webp"); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) { --blason-matiere: url("../assets/img/blason-matiere-sombre.webp"); }
@@ -38,7 +29,6 @@
   background: var(--blason-matiere) center / contain no-repeat;
   pointer-events: none;
 }
-/* Sur mobile, le blason passerait sous le paragraphe : on le retire. */
 @media (max-width: 720px) {
   .page-hero::after { display: none; }
 }
@@ -54,25 +44,21 @@
 
 .page-hero__title {
   display: block;
-  overflow: hidden;               /* mask for the per-letter rise */
+  overflow: hidden;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: clamp(52px, 9vw, 128px);
   line-height: .92;
   text-transform: uppercase;
   margin-top: 10px;
-  /* words wrap as blocks (.word) — a nowrap here would overflow instead */
   white-space: normal;
 }
 
-/* each word is one unbreakable box: without it the browser wraps between
-   two letters, which split "EVENEMENTS" as "EVENEMEN / TS" on a phone */
 .page-hero__title .word {
   display: inline-block;
   white-space: nowrap;
 }
 
-/* per-letter entrance — same motion grammar as the landing headline */
 .page-hero__title .char {
   display: inline-block;
   transform: translateY(118%);
@@ -91,7 +77,6 @@
   color: var(--ink-soft);
 }
 
-/* ---------- Sections ------------------------------------------------------- */
 .section {
   max-width: 1400px;
   margin: 0 auto;
@@ -124,7 +109,6 @@
   white-space: nowrap;
 }
 
-/* ---------- Reveal on scroll (driven by js/pages.js) ----------------------- */
 .js-anim .reveal {
   opacity: 0;
   transform: translateY(30px);
@@ -138,7 +122,6 @@
   .page-hero__title .char { transform: none; transition: none; }
 }
 
-/* ---------- Squad block: gallery + rating card ----------------------------- */
 .squad {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
@@ -146,10 +129,9 @@
   align-items: stretch;
 }
 .squad + .squad { margin-top: clamp(36px, 6vh, 72px); }
-.squad--flip { direction: rtl; }        /* alternate layout */
+.squad--flip { direction: rtl; }
 .squad--flip > * { direction: ltr; }
 
-/* Scroll-snap photo strip */
 .gallery {
   display: flex;
   gap: 14px;
@@ -168,8 +150,6 @@
   scroll-snap-align: start;
   border-radius: 18px;
   overflow: hidden;
-  /* 16:9 keeps the full width of the squad line-up photos — at 16:10 the
-     players at each end of the row got cropped off. */
   aspect-ratio: 16 / 9;
   background: #ddd;
 }
@@ -195,7 +175,6 @@
   backdrop-filter: blur(6px);
 }
 
-/* Rating card — dark panel, chamfered corner, club colors */
 .rating-card {
   position: relative;
   background: var(--panel);
@@ -207,14 +186,14 @@
   flex-direction: column;
   gap: 18px;
 }
-.rating-card::before {           /* red chamfer accent */
+.rating-card::before {
   content: "";
   position: absolute;
   top: 0; right: 0;
   width: 34px; height: 34px;
   background: var(--red);
   clip-path: polygon(0 0, 100% 100%, 100% 0);
-  opacity: 0; /* covered by the main clip — kept for potential accent use */
+  opacity: 0;
 }
 
 .rating-card__kicker {
@@ -242,7 +221,6 @@
   color: rgba(255,255,255,.72);
 }
 
-/* Overall badge */
 .rating-card__ovr {
   position: absolute;
   top: clamp(18px, 2vw, 26px);
@@ -264,7 +242,6 @@
   color: var(--red-on-dark);
 }
 
-/* Stat rows: label + stars + value */
 .stat { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 14px; }
 .stat + .stat { margin-top: 12px; }
 
@@ -283,9 +260,6 @@
   text-align: right;
 }
 
-/* Stars: gray outline row + red filled row clipped to --fill.
-   The element must shrink-wrap the glyphs — stretched to the grid column,
-   --fill would be a share of the column and every star would read as full. */
 .stars {
   position: relative;
   display: inline-block;
@@ -310,27 +284,15 @@
 
 .rating-card__divider { border: 0; border-top: 1px solid rgba(255,255,255,.12); margin: 4px 0; }
 
-/* ---------- Kits -----------------------------------------------------------
-   The renders are cut out of their white studio backdrop (alpha WebP), so the
-   shirts float straight on the page — same idea as the jersey on the landing
-   hero — instead of sitting inside a visible white box.
-   -------------------------------------------------------------------------- */
 .kits {
   display: grid;
-  /* 250px min + a tighter gap so all four shirts fit on one desktop row;
-     at 300px/64px the fourth wrapped alone onto a second line. */
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: clamp(20px, 2.4vw, 40px);
-  /* align on the TOP: the captions differ by a line, so bottom-aligning
-     pushed the shorter columns down and staggered the headings. */
   align-items: start;
 }
 
 .kit { text-align: center; }
 
-/* Fixed box + contain: the two renders have different intrinsic ratios
-   (824×1000 vs 661×1000), so sizing by width made the away shirt render
-   larger and pushed the two caption blocks out of line. */
 .kit__shirt {
   display: block;
   width: 100%;
@@ -381,7 +343,6 @@
 }
 .kits__sponsor strong { color: var(--ink); }
 
-/* ---------- Staff / president panels --------------------------------------- */
 .duo {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
@@ -423,7 +384,6 @@
   text-transform: uppercase;
 }
 
-/* ---------- Media / match cards -------------------------------------------- */
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -487,7 +447,6 @@
 .match-card__title { font-weight: 800; font-size: 16px; letter-spacing: .03em; text-transform: uppercase; }
 .match-card__meta { font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,.62); letter-spacing: .04em; }
 
-/* ---------- Cinematic event film (portrait footage, dark stage) ------------ */
 .film {
   position: relative;
   margin: clamp(36px, 7vh, 84px) 0;
@@ -496,15 +455,14 @@
   color: var(--on-dark);
   overflow: hidden;
 }
-.film::before {                 /* blurred still of the footage as the stage */
+.film::before {
   content: "";
   position: absolute;
   inset: 0;
-  /* each .film section supplies its own still via --film-bg */
   background: var(--film-bg, none) center / cover no-repeat;
   opacity: .5;
 }
-.film::after {                  /* legibility scrim */
+.film::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -531,8 +489,7 @@
   aspect-ratio: 9 / 16;
   background: var(--panel);
   border-radius: 28px;
-  padding: 10px;                 /* phone-style bezel, same motif as the
-                                    landing media card */
+  padding: 10px;
   box-shadow: 0 30px 70px rgba(0,0,0,.5);
   justify-self: center;
 }
@@ -569,12 +526,9 @@
   .film__frame { height: 68vh; }
 }
 
-/* ---------- Next event: cinematic announcement banner ---------------------- */
 .next-event {
   position: relative;
   margin-bottom: clamp(20px, 3vh, 34px);
-  /* Keep the 16:9 trailer uncropped on desktop; the min-height only kicks
-     in on narrow screens, where the centered subject survives the crop. */
   aspect-ratio: 16 / 9;
   min-height: clamp(340px, 46vh, 520px);
   max-height: 76vh;
@@ -596,7 +550,6 @@
   cursor: pointer;
 }
 
-/* Scrim: keeps the copy legible over the footage without flattening it */
 .next-event::after {
   content: "";
   position: absolute;
@@ -607,8 +560,6 @@
     linear-gradient(to right, rgba(13,13,13,.6), transparent 60%);
 }
 
-/* Info bar pinned to the bottom: the trailer carries its own title, so the
-   overlay only adds the practical details — no competing typography. */
 .next-event__body {
   position: relative;
   z-index: 1;
@@ -619,9 +570,9 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
-  pointer-events: none;   /* clicks fall through to the video…            */
+  pointer-events: none;
 }
-.next-event__body .btn { pointer-events: auto; margin-top: 0; }  /* …except the CTA */
+.next-event__body .btn { pointer-events: auto; margin-top: 0; }
 
 .next-event__meta {
   margin-top: 12px;
@@ -650,7 +601,6 @@
   color: rgba(255,255,255,.78);
 }
 
-/* Sound sits top-right here — the bottom-right belongs to the CTA */
 .next-event .film__sound {
   z-index: 2;
   pointer-events: auto;
@@ -660,9 +610,6 @@
 }
 
 @media (max-width: 900px) {
-  /* aspect-ratio + min-height is a trap: the ratio turns the min-height into
-     a MINIMUM WIDTH (62vh × 16/9 = 930px on a 390px phone), which blew the
-     page 540px wide. Drop the ratio and let the height rule instead. */
   .next-event {
     aspect-ratio: auto;
     height: 62vh;
@@ -673,14 +620,7 @@
   .next-event__body .btn { width: 100%; text-align: center; }
 }
 
-/* ---------- New event poster ------------------------------------------------
-   A poster is artwork with the facts baked into it, so it is never cropped:
-   it keeps its own ratio inside its frame. The facts are repeated as real
-   text on the other column — an image is not indexed, not read aloud, and
-   not there when it fails to load.
 
-   Light card, like .event-card: the poster is loud enough on its own, and a
-   dark panel around it would fight the red.                                */
 .event-poster {
   display: grid;
   grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
@@ -694,9 +634,6 @@
 }
 .event-poster:hover { transform: translateY(-3px); box-shadow: 0 16px 34px var(--line); }
 
-/* Le corps s'étire sur toute la hauteur de l'affiche et pousse son bouton
-   en bas : centré, il laissait une bande vide de 175 px sous lui. L'affiche,
-   elle, garde sa propre hauteur — l'étirer montrerait le fond du cadre. */
 .event-poster__body { align-self: stretch; display: flex; flex-direction: column; }
 
 .event-poster__art {
@@ -718,12 +655,6 @@
 }
 .event-poster__text { margin-top: 10px; font-size: 15px; color: var(--ink-soft); font-weight: 500; }
 
-/* LES FAITS EN BANDEAU, et non en colonne. Empilés, ils s'arrêtaient à
-   600 px et laissaient le reste de la carte vide — mesuré : un bloc de
-   1285 px dont le texte n'en occupait que la moitié. En trois colonnes ils
-   tiennent la largeur, et se lisent comme la feuille de match qu'ils sont.
-   L'intitulé passe AU-DESSUS de sa valeur : côte à côte, la colonne des
-   intitulés imposait sa largeur aux trois. */
 .event-poster__facts {
   margin-top: clamp(20px, 2.4vw, 30px);
   display: grid;
@@ -750,15 +681,11 @@
 .event-poster .btn { margin-top: clamp(20px, 2.4vw, 30px); align-self: flex-start; }
 @media (min-width: 761px) { .event-poster .btn { margin-top: auto; } }
 
-/* Une seule colonne de faits sous 560 px : trois colonnes y donneraient
-   « Stade de » sur une ligne et « Brofodoumé » sur la suivante. */
 @media (max-width: 900px) {
   .event-poster__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   .event-poster { grid-template-columns: minmax(0, 1fr); }
-  /* L'affiche ne prend pas toute la largeur d'un téléphone : à 390 px elle
-     ferait 700 px de haut et pousserait les faits hors de l'écran. */
   .event-poster__art { max-width: 300px; margin: 0 auto; }
   .event-poster .btn { width: 100%; text-align: center; }
 }
@@ -766,29 +693,17 @@
   .event-poster__facts { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* LE ROUGE DES INTITULÉS REMONTE D'UN CRAN EN SOMBRE, et seulement ici.
-   Mesuré sur les pixels rendus : #E2543F sur la surface d'une carte sombre
-   donne 4,36 — sous le seuil de 4,5 pour du texte de 10 et 13 px. Le kicker
-   et les trois intitulés tombaient tous les quatre.
 
-   C'est le geste que cette feuille a déjà fait une fois au niveau du jeton
-   (« remonté : le rouge d'origine manque de contraste ») ; on le refait à la
-   portée du seul bloc, pour ne rien changer aux autres pages. Le doublon de
-   sélecteurs est celui du reste du fichier : une règle ne peut pas être à la
-   fois dans une media query et hors d'elle. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .event-poster { --red: #EC6650; }
 }
 :root[data-theme="dark"] .event-poster { --red: #EC6650; }
 
-/* ---------- Event cards ----------------------------------------------------- */
 .event-card {
   display: grid;
   grid-template-columns: 86px 1fr auto;
   gap: 20px;
   align-items: center;
-  /* the CTA carries the shared .btn top margin — cancel it so the three
-     columns share one centre line */
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -820,16 +735,12 @@
   text-transform: uppercase;
   color: var(--red-on-dark);
 }
-/* Événement sans date : une icône à la place de la date */
 .event-card__date--icone { display: grid; place-items: center; min-height: 58px; }
 .event-card__date--icone svg { width: 30px; height: 30px; }
 
 .event-card__title { font-weight: 800; font-size: 16px; text-transform: uppercase; letter-spacing: .03em; }
 .event-card__meta  { margin-top: 4px; font-size: 13px; color: var(--ink-soft); font-weight: 500; }
 
-/* past-events media grid */
-/* auto-fit, not auto-fill: with three items auto-fill reserved an empty
-   fourth column on wide screens. */
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -856,15 +767,6 @@
   text-transform: uppercase;
 }
 
-/* ---------- Poster wall ----------------------------------------------------
-   Event posters are designed artwork, not photographs: cropping them to a
-   fixed ratio would cut their typography. A masonry column layout lets each
-   poster keep its own aspect ratio (square / portrait / landscape).
-   -------------------------------------------------------------------------- */
-/* Grid, not columns: posters of very different heights left a ragged
-   300px edge and a hole under the shortest one. Rows now align. */
-/* Rangées centrées : un nombre d'affiches qui ne remplit pas la dernière
-   rangée la centre au lieu de laisser une affiche seule à gauche. */
 .poster-wall {
   --pw-gap: clamp(14px, 1.6vw, 22px);
   display: flex;
@@ -882,7 +784,6 @@
   border-radius: 16px;
   overflow: hidden;
   background: var(--panel);
-  /* uniform card height; the poster is letterboxed inside, never cropped */
   aspect-ratio: 4 / 5;
   display: flex;
   align-items: center;
@@ -892,7 +793,7 @@
 .poster-wall img {
   width: 100%;
   height: 100%;
-  object-fit: contain;           /* whole artwork visible, typography intact */
+  object-fit: contain;
   display: block;
   transition: transform .6s var(--ease-out-expo);
 }
@@ -910,7 +811,6 @@
   text-transform: uppercase;
 }
 
-/* ---------- Community ------------------------------------------------------- */
 .social-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -939,7 +839,6 @@
 }
 .social-card span { font-size: 13px; color: rgba(255,255,255,.62); font-weight: 500; }
 
-/* Colonnes fixes : 6 liens en 3+3, jamais un lien seul sur sa rangée ; 4 liens (page 404) en 2+2. */
 .link-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
 @media (min-width: 600px) { .link-list { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 900px) { .link-list { grid-template-columns: repeat(3, 1fr); } }
@@ -978,18 +877,9 @@
   margin-bottom: 8px;
 }
 .contact-panel p, .contact-panel a { font-size: 15px; font-weight: 600; color: var(--on-dark); line-height: 1.5; }
-/* inline links were 19px tall — too small to tap reliably */
-/* Action principale de la page : une vraie cible de 44px. Le rembourrage
-   était à 6px, ce qui donnait 34px de haut. La marge négative annule
-   l'effet sur l'espacement du bloc. */
 .contact-panel a { display: inline-block; padding: 11px 0; margin: -5px 0; }
 .contact-panel a:hover { color: var(--red); }
 
-/* ---------- Join / newsletter form ------------------------------------------
-   One form serves three jobs: trial sign-ups, newsletter opt-ins and a
-   segmented supporter list — the "I am a…" field is what turns raw
-   submissions into a usable database.
-   -------------------------------------------------------------------------- */
 .join {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
@@ -1046,7 +936,6 @@
   background: rgba(255, 255, 255, .1);
 }
 .field input::placeholder, .field textarea::placeholder { color: rgba(255,255,255,.35); }
-/* native dropdown list is drawn by the OS — keep its text readable */
 .field select option { color: #101010; background: #fff; }
 
 .field--check {
@@ -1093,11 +982,8 @@
   display: none;
 }
 .join__status.is-ok   { display: block; color: #7ee29a; }
-/* Sans JavaScript, le formulaire ne peut rien envoyer : on le masque et le
-   bloc <noscript> donne le WhatsApp et l'e-mail du club à la place. */
 html:not(.js-anim) .join__form { display: none; }
 
-/* Side panel: why join + the WhatsApp shortcut */
 .join__aside { display: flex; flex-direction: column; gap: 14px; }
 
 .join__list { list-style: none; display: grid; gap: 10px; }
@@ -1122,7 +1008,7 @@ html:not(.js-anim) .join__form { display: none; }
   gap: 13px;
   padding: 17px 20px;
   border-radius: 14px;
-  background: #137a3d; /* vert plus sombre : texte blanc à 5,4:1 */
+  background: #137a3d;
   color: #ffffff;
   transition: transform .25s ease;
 }
@@ -1135,18 +1021,15 @@ html:not(.js-anim) .join__form { display: none; }
   .join { grid-template-columns: 1fr; }
 }
 
-/* Lien vers la politique de confidentialité, sous la case de consentement */
 .join__privacy { margin: -4px 0 18px; font-size: 13px; }
-.join__privacy a { color: var(--on-dark); text-decoration: underline; text-underline-offset: 3px; } /* le panneau du formulaire est sombre dans les deux thèmes */
+.join__privacy a { color: var(--on-dark); text-decoration: underline; text-underline-offset: 3px; }
 
-/* Pages légales : mentions légales et politique de confidentialité */
 .legal { max-width: 72ch; line-height: 1.65; }
 .legal h2 { font-family: var(--font-display); font-size: 18px; text-transform: uppercase; letter-spacing: .04em; margin: 40px 0 12px; }
 .legal p, .legal li { font-size: 16px; color: var(--ink-soft); margin: 0 0 12px; }
 .legal ul { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 10px; }
 .legal a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 
-/* ---------- Compact footer -------------------------------------------------- */
 .page-footer {
   background: var(--band);
   color: var(--on-dark);
@@ -1167,7 +1050,6 @@ html:not(.js-anim) .join__form { display: none; }
 }
 .page-footer__note { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .5; }
 
-/* Official sponsor line — its own row across the foot of the page */
 .page-footer__sponsor {
   flex: 1 0 100%;
   order: 3;
@@ -1182,8 +1064,6 @@ html:not(.js-anim) .join__form { display: none; }
   color: rgba(255, 255, 255, .6);
 }
 .page-footer__sponsor strong { color: var(--on-dark); letter-spacing: .16em; }
-/* wrap: five links on one forced line were 411px wide and pushed a 390px
-   phone into horizontal scroll */
 .page-footer nav {
   display: flex;
   flex-wrap: wrap;
@@ -1191,9 +1071,6 @@ html:not(.js-anim) .join__form { display: none; }
   gap: 4px 18px;
 }
 .page-footer nav a {
-  /* 44px de haut. En rendu « en ligne » le rembourrage vertical ne crée pas
-     de boîte cliquable fiable : il faut passer en bloc en ligne. La marge
-     négative annule l'effet sur l'alignement. */
   display: inline-block;
   padding: 15px 4px;
   margin: -4px 0;
@@ -1206,7 +1083,6 @@ html:not(.js-anim) .join__form { display: none; }
 }
 .page-footer nav a:hover { opacity: 1; }
 
-/* ---------- Responsive ------------------------------------------------------ */
 @media (max-width: 900px) {
   .squad, .duo { grid-template-columns: 1fr; }
   .squad--flip, .duo--flip { direction: ltr; }
